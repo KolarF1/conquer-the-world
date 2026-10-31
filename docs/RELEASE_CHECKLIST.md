@@ -3,16 +3,10 @@
 Everything else is done and checked by `node tools/check.js`. Each step says what proves it worked. Steps 1 to 3 block
 release; 4 to 6 do not, but the game is thinner without them.
 
-## 1. Publish the source (required by the AGPL, section 13)
+## 1. Publish the source: DONE
 
-The licence requires players to be able to get this game's source.
-
-1. Create a public GitHub repository for the game.
-2. In `src/client/UI/HelpOverlay.luau`, set `HelpOverlay.SOURCE_REPO` to `your-account/your-repo`.
-3. Push `src`, `tests`, `tools`, `docs`, `LICENSE`, `NOTICE.md`, `README.md`, `default.project.json`.
-   Leave out `legacy`, `references` and `build`.
-
-Proof: `node tools/check.js` no longer prints `WARN source repo not set`, and How to Play shows your repository.
+Public at https://github.com/KolarF1/conquer-the-world (AGPL section 13). `HelpOverlay.SOURCE_REPO` points at it.
+Every update published to Roblox needs its source pushed there too, so the public code matches what is live.
 
 ## 2. Publish the place and turn on the image APIs
 
