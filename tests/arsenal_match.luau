@@ -12,6 +12,7 @@ local Sim = require("../src/shared/Core/Sim")
 local Defs = require("../src/shared/Core/Defs")
 local Stars = require("../src/shared/Data/Stars")
 local GameState = require("../src/shared/Core/GameState")
+local Cosmetics = require("../src/shared/Data/Cosmetics")
 U.use_zstd(Protocol)
 
 local fails = 0
@@ -74,27 +75,36 @@ mirror:set_cosmetics({ [a] = { face = 12345 }, [b] = { face = -2 }, [9] = { flag
 expect(mirror.cosmetics[a] ~= nil and mirror.cosmetics[a].face == 12345, "the client keeps a face on its own")
 expect(mirror.cosmetics[b] == nil, "and drops one that is no user id")
 expect(mirror.cosmetics[9] ~= nil and mirror.cosmetics[9].face == nil, "a bad face leaves the flag")
--- bot players wear a head shot too, each a different one of the server's pool
-server.deps.bot_faces = { 101, 102, 103, 104, 105 }
+-- bot players wear a badge of ours, never a real account's head shot
 server:_dress_bots({ 40, 41, 42, 43 })
 local bz = server:cosmetics_map()
-local seen_faces, distinct = {}, 0
+local seen_badges, distinct = {}, 0
 for _, id in { 40, 41, 42, 43 } do
-	local f = bz[id] and bz[id].face
-	if type(f) == "number" and f >= 101 and f <= 105 and not seen_faces[f] then
-		seen_faces[f] = true
+	local f = bz[id] and bz[id].badge
+	expect(bz[id] ~= nil and bz[id].face == nil, "a bot player has no user id in the cosmetics map")
+	if type(f) == "number" and f >= 1 and f <= Cosmetics.BOT_BADGES and not seen_badges[f] then
+		seen_badges[f] = true
 		distinct += 1
 	end
 end
-expect(distinct == 4, "every bot player has a head shot of its own from the pool")
-expect(#server.deps.bot_faces == 5, "the pool itself is left whole")
-server:_dress_bots({ 40, 41, 42, 43, 44, 45, 46 })
-local short = 0
-for _, id in { 40, 41, 42, 43, 44, 45, 46 } do
-	short += if server._bot_cosmetics[id] ~= nil and server._bot_cosmetics[id].face ~= nil then 1 else 0
+expect(distinct == 4, "every bot player has a badge of its own")
+local many = {}
+for n = 1, Cosmetics.BOT_BADGES + 5 do
+	many[n] = 100 + n
 end
-expect(short == 5, "a pool smaller than the bots runs out rather than repeating")
-server.deps.bot_faces = nil
+server:_dress_bots(many)
+local all_badged = true
+for _, id in many do
+	all_badged = all_badged and server._bot_cosmetics[id].badge ~= nil
+end
+expect(all_badged, "more bots than badges: they repeat rather than go without")
+local mb = GameState.new(map)
+mb:set_cosmetics({ [40] = { badge = 3 }, [41] = { badge = 0 } }, true)
+expect(mb.cosmetics[40] ~= nil and mb.cosmetics[40].face == -3, "the client keeps a badge as a negative face")
+expect(mb.cosmetics[41] == nil, "and drops a bad one")
+local art = Cosmetics.face_image(-3)
+expect(type(art) == "table" and art.kind == "flag", "a badge is our own art")
+expect(type(Cosmetics.face_image(12345)) == "string", "a person's face is their own head shot")
 server:_dress_bots({})
 expect(
 	sim.o_unlock[a] == Defs.UNLOCK.mega and sim.o_unlock[b] == 0,

@@ -583,11 +583,8 @@ function Main.start()
 	end
 end
 
--- Owner-only real-client test hook: joining with launchData "autosolo[:lat,lon]" (e.g.
--- roblox://experiences/start?placeId=137151641329864&launchData=autosolo:48,10) starts a Standard solo
--- match and picks the unclaimed land nearest to lat/lon, so the published game can be verified on a
--- real Roblox client without clicking through the title. Ignored for everyone else.
-Main.OWNER_USER_ID = 22641473
+-- Studio-only test hook: launchData "autosolo[:lat,lon]" starts a Standard solo match and picks the unclaimed
+-- land nearest to lat/lon. Ignored everywhere else.
 function Main.launch_hooks(player: Player)
 	task.spawn(function()
 		local ld = player:GetAttribute("AF_LaunchData")
@@ -599,7 +596,7 @@ function Main.launch_hooks(player: Player)
 		if type(ld) ~= "string" or string.sub(ld, 1, 8) ~= "autosolo" then
 			return
 		end
-		if player.UserId ~= Main.OWNER_USER_ID and not game:GetService("RunService"):IsStudio() then
+		if not game:GetService("RunService"):IsStudio() then
 			return
 		end
 		local lat, lon = 30.0, 100.0

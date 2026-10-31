@@ -1,15 +1,14 @@
 --!strict
--- The Rofront Staging experience (2026-10-04: a separate game to test changes in before they go to
--- prod): its universe id, for what differs there (Data/Products' ids, the game menu's
--- "Replay as new player").
+-- A separate experience to test changes in before they go live: set its universe id here if you make one (what
+-- differs there: Data/Products' ids, the game menu's "Replay as new player").
 local Staging = {}
 
---- Rofront Staging's universe id.
-Staging.UNIVERSE = 10769439627
+--- The staging experience's universe id (none yet).
+Staging.UNIVERSE = nil :: number?
 
---- True in the Rofront Staging experience.
+--- True in the staging experience.
 function Staging.here(): boolean
-	return typeof(game) == "Instance" and (game :: any).GameId == Staging.UNIVERSE
+	return Staging.UNIVERSE ~= nil and typeof(game) == "Instance" and (game :: any).GameId == Staging.UNIVERSE
 end
 
 return Staging

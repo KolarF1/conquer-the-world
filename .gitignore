@@ -4,7 +4,7 @@
 .secrets/
 .venv/
 __pycache__/
-assets/audio/
+/assets/audio/
 build/
 build/
 node_modules/
@@ -12,6 +12,6 @@ sourcemap.json
 src/server/Lobbies/Secret.luau
 
 # Not part of the game's source: an archived project, reference copies, and art the game no longer uses
-legacy/
-references/
-assets/
+/legacy/
+/references/
+/assets/

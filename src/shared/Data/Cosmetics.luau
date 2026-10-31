@@ -280,56 +280,11 @@ Cosmetics.skins = {
 	{ id = "seafarer", name = "Seafarer", rarity = "legendary", scale = 0, accent = 0xFFC24A, mask = { "...##...", "...##...", ".######.", "...##...", "#..##..#", ".#.##.#.", "..####.." } },
 }
 
---- Skins made for one player (2026-10-18: a custom background for the player @ilyannna, from a clip
---- of a Tie Dye pattern). Never in a crate, never on a
+--- Skins made for one player (none yet). Never in a crate, never on a
 --- bot player, not in the Locker's "N of M": the `owners` (Roblox user ids) own them (Purchases), and it
 --- goes on the first time they join with it. Several colours: in `mask`, '.' is the owner's own fill and
 --- '1'..'9', 'a'..'z' are colors[1..], drawn at `alpha`.
 Cosmetics.exclusive_skins = {
-	-- TIE_DYE_BEGIN (tools/assets/tie_dye.py writes this entry)
-	{
-		id = "tie_dye",
-		name = "Tie Dye",
-		owners = { 58387889 }, -- ilyannna
-		scale = 0,
-		alpha = 166,
-		colors = { 0xD45881, 0xDA846A, 0xDEB077, 0x7FA88C, 0x6D91D5, 0xA467CF, 0xCFAADA },
-		mask = {
-			"71122334443333332211665576667776",
-			"61122733333333332217655555666666",
-			"67122222222233332216655555555556",
-			"66172222222227322116555574444755",
-			"56112227112222221166555444473445",
-			"56711111111222711665555443333334",
-			"45671111117271166755554433222233",
-			"45566711172211665557444432211723",
-			"44556671122211655444444322111123",
-			"34455661722216754444433221666123",
-			"74455661222216554447332716556123",
-			"44455661223325544443322165541233",
-			"44555611273344444447321665443334",
-			"55556112233344447744321655744444",
-			"55661122333334455544321665555755",
-			"56611273333334455554322166655555",
-			"66112333333344755554332711666555",
-			"66123344444444555554433222116666",
-			"61223444444455555554433332211666",
-			"11233444445556665554444433321177",
-			"72733444455666666554444444372111",
-			"23337444756611166555444444332222",
-			"33374444756711116655555544733223",
-			"34444444556111111666755544733333",
-			"44444444556111111176666574333337",
-			"44444444556611111111176554433337",
-			"74444445556611111177116654443333",
-			"33334475555562117222211655553223",
-			"27333475555432222222211665566122",
-			"22233445555432222222711666661112",
-			"11223745554433222222116666661111",
-			"11127344444733322221166666671111",
-		},
-	},
-	-- TIE_DYE_END
 }
 
 --- How an exclusive item shows in the Locker (not a crate rarity: no odds).
@@ -379,7 +334,8 @@ end
 -- (exclusives resolve by id like any item, but stay out of `order`: the crates, their odds, bot players)
 local exclusives: { Item } = {}
 local granted: { [number]: { string } } = {}
-for _, s in Cosmetics.exclusive_skins do
+--- Makes `s` an exclusive skin (an entry of exclusive_skins, or a test's own).
+function Cosmetics.add_exclusive(s: any)
 	local it: any = table.clone(s)
 	it.kind = "skin"
 	it.rarity = "exclusive"
@@ -390,6 +346,9 @@ for _, s in Cosmetics.exclusive_skins do
 		granted[uid] = granted[uid] or {}
 		table.insert(granted[uid], it.id)
 	end
+end
+for _, s in Cosmetics.exclusive_skins do
+	Cosmetics.add_exclusive(s)
 end
 
 -- (General skins resolve by id too, and stay out of `order` like the exclusives)
@@ -521,8 +480,14 @@ end
 
 --- A player's Roblox head shot: the `face` of a match's cosmetics map is their user id (since
 --- 2026-10-04 a little Roblox head picture shows next to each username).
-function Cosmetics.face_image(user_id: number): string
-	return string.format("rbxthumb://type=AvatarHeadShot&id=%d&w=48&h=48", user_id)
+--- What goes beside a name: above 0 a person's own head shot; below 0 a bot player's badge, one of ours
+--- (Art/Emblem through the flag art).
+Cosmetics.BOT_BADGES = 24
+function Cosmetics.face_image(face: number): any
+	if face < 0 then
+		return { art = true, kind = "flag", key = "commander" .. tostring(-face), w = 48, h = 48 }
+	end
+	return string.format("rbxthumb://type=AvatarHeadShot&id=%d&w=48&h=48", face)
 end
 
 --- The player's own odds per rarity: RARITIES' odds over the rarities that still have an item they

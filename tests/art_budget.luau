@@ -40,7 +40,8 @@ add("structure plates", MapData.plate_rim.w * MapData.plate_rim.h)
 add("unit sprites + crown", MapData.unit_body.w * MapData.unit_body.h + 64 * 64)
 add("effects atlas", FxData.atlas.w * FxData.atlas.h)
 add("rail tiles (6)", 6 * 16 * 16)
-add("thumbnails (6 maps)", 6 * 160 * 140)
+add("thumbnails (12 maps)", 12 * 160 * 140)
+add("bot badges", Cosmetics.BOT_BADGES * 48 * 48)
 local flags = 0
 for _, it in Cosmetics.all() do
 	if it.kind == "flag" then

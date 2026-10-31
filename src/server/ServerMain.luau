@@ -34,7 +34,6 @@ local LobbyHttp = require(script.Parent.Lobbies.LobbyHttp) :: any
 local SecretModule = script.Parent.Lobbies:FindFirstChild("Secret")
 local LobbySecret = if SecretModule then require(SecretModule :: ModuleScript) :: any else nil
 local BotNames = require(Shared.Data.BotNames) :: any
-local BotFaces = require(script.Parent.BotFaces) :: any
 local FreshServers = require(script.Parent.FreshServers) :: any
 local TutorialData = require(Shared.Data.Tutorial) :: any
 local Staging = require(Shared.Data.Staging) :: any
@@ -59,7 +58,7 @@ ServerMain.server = nil :: any
 ServerMain.MAX_MESSAGES_PER_SEC = 90
 --- The production experience (Rofront; build/publish.json). Other experiences running this code
 --- (Rofront Staging) stay off the services production shares.
-ServerMain.PROD_UNIVERSE = 10768172922
+ServerMain.PROD_UNIVERSE = nil :: number? -- (no lobby service of our own: MemoryStore does the job)
 --- Team games and parties in production (docs/teams-and-parties.md; always on in Staging and Studio).
 ServerMain.TEAM_GAMES_LIVE = true
 --- SETTING messages per second per client (clients throttle each section to 2/s).
@@ -259,7 +258,7 @@ function ServerMain.start()
 	if RunService:IsStudio() then
 		local u = workspace:GetAttribute("AF_LOBBY_URL")
 		lobby_url = if type(u) == "string" and u ~= "" then u else nil
-	elseif LobbyHttp.ENABLED and game.GameId == ServerMain.PROD_UNIVERSE then
+	elseif LobbyHttp.ENABLED and ServerMain.PROD_UNIVERSE ~= nil and game.GameId == ServerMain.PROD_UNIVERSE then
 		-- (only the production experience: the service is one shared lobby list, and another
 		-- experience, like Rofront Staging, must not show up in it; MemoryStore is its own per experience)
 		lobby_url = LobbyHttp.BASE_URL
@@ -485,7 +484,6 @@ function ServerMain.start()
 	local server = MatchServer.new({
 		lobby = if is_match_server then lobby_hooks() else nil,
 		-- the head shots bot players wear beside their names (Roblox user ids; server only)
-		bot_faces = BotFaces,
 		-- what a player wears in a match (Data/Cosmetics; the match server sends it to everyone)
 		cosmetics_of = function(peer: any): any
 			return if typeof(peer) == "Instance" then Purchases.equipped(peer) else nil

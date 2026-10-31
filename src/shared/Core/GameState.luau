@@ -279,7 +279,11 @@ function GameState.set_cosmetics(self: any, map: { [any]: any }, full: boolean?)
 		seen[id] = true
 		local skin = if type(v) == "table" and type(v.skin) == "string" then v.skin else nil
 		local flag = if type(v) == "table" and type(v.flag) == "string" then v.flag else nil
+		-- (a person's user id, above 0; a bot player's drawn badge travels as `badge` and is kept as its negative)
 		local face = if type(v) == "table" and type(v.face) == "number" and v.face > 0 then v.face else nil
+		if face == nil and type(v) == "table" and type(v.badge) == "number" and v.badge > 0 then
+			face = -math.floor(v.badge)
+		end
 		local old = self.cosmetics[id]
 		if skin == nil and flag == nil and face == nil then
 			if old ~= nil then

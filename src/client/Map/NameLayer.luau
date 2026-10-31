@@ -632,8 +632,12 @@ function NameLayer.tick(self: any, dt: number)
 		local face_id = if cz ~= nil and cz.face ~= nil then cz.face else 0
 		if face_id ~= p.face_id then
 			p.face_id = face_id
-			p.face.Image = if face_id > 0 then Cosmetics.face_image(face_id) else ""
-			p.face.Visible = face_id > 0
+			if face_id ~= 0 then
+				Sprites.set(p.face, Cosmetics.face_image(face_id))
+			else
+				Sprites.set(p.face, "")
+			end
+			p.face.Visible = face_id ~= 0
 			p.px = -1 -- size the head with the name
 			p.size_dirty = 3
 		end

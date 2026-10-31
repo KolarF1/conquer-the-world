@@ -457,10 +457,12 @@ do
 	expect(not Starter.auto_due(nil, 0, now) and not Starter.auto_due("used", 0, now), "starter auto: no offer: never")
 end
 
--- Exclusive cosmetics (Cosmetics.exclusive_skins; 2026-10-18, Tie Dye for ilyannna): its owner owns
--- it whenever their record is read and wears it the first time; nobody else's record can hold it
+-- Exclusive cosmetics (Cosmetics.exclusive_skins; none ship, so a test's own): its owner owns it whenever their
+-- record is read and wears it the first time; nobody else's record can hold it
 do
-	local F = { UserId = 58387889, Name = "ilyannna" }
+	local Cosmetics = require("../src/shared/Data/Cosmetics")
+	local F = { UserId = 999001, Name = "Owner" }
+	Cosmetics.add_exclusive({ id = "tie_dye", name = "Test Dye", owners = { F.UserId }, scale = 0, alpha = 166, colors = { 0xD45881 }, mask = { "1." } })
 	local X = { UserId = 81, Name = "Other" }
 	local seen = {}
 	Purchases.configure({
@@ -479,7 +481,7 @@ do
 	local i = seen[F]
 	expect(
 		i ~= nil and table.find(i.owned, "tie_dye") ~= nil and i.equipped.skin == "tie_dye",
-		"ilyannna's first join: tie_dye owned and worn (over the skin they had on)"
+		"the owner's first join: tie_dye owned and worn (over the skin they had on)"
 	)
 	expect(Purchases.equipped(F) ~= nil and Purchases.equipped(F).skin == "tie_dye", "a match shows it on their land")
 	expect(table.find(i.owned, "stripes") ~= nil, "what they owned before stays")

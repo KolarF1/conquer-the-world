@@ -92,6 +92,10 @@ function MapArt.set(label: any, ref: any)
 			label.ImageContent = ref.content
 		end
 	else
+		-- (a reused label that held an EditableImage can stay stuck on it: UI/ArtAtlas.apply)
+		pcall(function()
+			label.ImageContent = Content.none
+		end)
 		label.Image = if type(ref) == "string" then ref else ""
 	end
 end

@@ -157,8 +157,8 @@ function Row.set_row(self, o: any, r: number)
 	local face = if cz ~= nil and cz.face ~= nil then cz.face else 0
 	if face ~= self._face_id then
 		self._face_id = face
-		self._face_img.Image = if face > 0 then Cosmetics.face_image(face) else ""
-		self.face:set_visible(face > 0)
+		UITheme.set_image(self._face_img, if face ~= 0 then Cosmetics.face_image(face) else "")
+		self.face:set_visible(face ~= 0)
 	end
 	local fid = if cz ~= nil and cz.flag ~= nil then cz.flag else ""
 	if fid ~= self._flag_id then

@@ -291,7 +291,7 @@ function SpawnOverlay._refresh_players(self)
 		local img = Instance.new("ImageLabel")
 		img.BackgroundColor3 = Color3.fromRGB(40, 52, 82)
 		img.BorderSizePixel = 0
-		img.Image = UICtx.data("Cosmetics").face_image(cosmetics[h.id].face)
+		UITheme.set_image(img, UICtx.data("Cosmetics").face_image(cosmetics[h.id].face))
 		img.ImageTransparency = if h.spawned then 0 else 0.55
 		local corner = Instance.new("UICorner")
 		corner.CornerRadius = UDim.new(0.5, 0)

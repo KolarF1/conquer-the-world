@@ -144,10 +144,20 @@ do
 	expect(surf._skins[3] == nil and surf:tile_pixel(W + 1) == 0x96112233, "unequipped: the plain fill")
 end
 
--- Exclusive skins (Cosmetics.exclusive_skins; 2026-10-18, Tie Dye for ilyannna): their owners only,
--- never in a crate, several colours
+-- Exclusive skins (none ship today; the machinery, with a test's own): their owners only, never in a crate,
+-- several colours
 do
-	local ILYANNNA = 58387889
+	expect(#Cosmetics.exclusive_skins == 0, "no skin ships made for anyone")
+	local OWNER = 999001
+	Cosmetics.add_exclusive({
+		id = "tie_dye",
+		name = "Test Dye",
+		owners = { OWNER },
+		scale = 0,
+		alpha = 166,
+		colors = { 0xD45881, 0xDA846A, 0x7FA88C },
+		mask = { "1122..33", "1122..33", "33..2211", "33..2211" },
+	})
 	local td = Cosmetics.item("tie_dye")
 	expect(td ~= nil and td.kind == "skin" and td.exclusive == true and td.rarity == "exclusive", "tie_dye resolves")
 	local in_all = false
@@ -156,12 +166,12 @@ do
 	end
 	expect(not in_all, "no exclusive in the crate catalog (Cosmetics.all)")
 	expect(Cosmetics.rarity("exclusive").name == "Exclusive", "the Exclusive label")
-	local g = Cosmetics.granted(ILYANNNA)
-	expect(#g == 1 and g[1] == "tie_dye", "ilyannna's user id is granted tie_dye")
+	local g = Cosmetics.granted(OWNER)
+	expect(#g == 1 and g[1] == "tie_dye", "its owner's user id is granted it")
 	expect(#Cosmetics.granted(1) == 0 and #Cosmetics.granted(nil) == 0, "nobody else is granted anything")
-	expect(Cosmetics.may_own("tie_dye", ILYANNNA) and not Cosmetics.may_own("tie_dye", 1), "may_own: its owner only")
+	expect(Cosmetics.may_own("tie_dye", OWNER) and not Cosmetics.may_own("tie_dye", 1), "may_own: its owner only")
 	expect(Cosmetics.may_own("stripes", 1) and Cosmetics.may_own("stripes", nil), "may_own: crate items for anyone")
-	expect(not Cosmetics.may_own("nope", ILYANNNA), "may_own: unknown ids for nobody")
+	expect(not Cosmetics.may_own("nope", OWNER), "may_own: unknown ids for nobody")
 	expect(Cosmetics.crate_owned({ tie_dye = true, stripes = true }) == 1, "crate_owned leaves exclusives out")
 	-- a player owning every crate item still has nothing to roll (the exclusive is not in crates)
 	local all = {}
