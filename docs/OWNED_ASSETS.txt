@@ -1,0 +1,10 @@
+# Asset ids the owner uploaded for THIS game (everything else under rbxassetid:// is forbidden by tools/check.js).
+# One id per line, with what it is. rbxasset:// (built into Roblox), rbxthumb:// and our own generated art need no entry.
+137499164850957 sfx click
+122548385802638 sfx build
+140116904842751 sfx error
+90458037613275 sfx notice
+126284092426471 sfx war
+133770403709310 sfx win
+119425620491833 music lobby
+73509293262264 music battle
