@@ -34,7 +34,7 @@ Main.boot = {} :: { [string]: number }
 local BUTTON = 44
 local GAP = 8
 local ICON = 36 -- the hud_* masks keep Airship's 0.7 inset framing (glyph ≈ 25 px)
-local FILL = Color3.fromRGB(18, 18, 21)
+local FILL = Color3.fromRGB(18, 23, 34)
 local FILL_T = 0.08
 local OVERLAY_T = 1.0
 local OVERLAY_HOVER_T = 0.92
@@ -120,11 +120,22 @@ end
 local FALLBACK_GLYPH =
 	{ music_on = "♪", music_off = "♪", help = "?", leaderboard = "≡", globe = "⌂", exit = "⏻", settings = "⚙" }
 
-local function show_tip(h: Hud, button: GuiObject?, text: string?)
+--- `tapped`: a touch press, which has no hover (the tip says what the icon was, for a moment).
+local tip_tap = 0
+local function show_tip(h: Hud, button: GuiObject?, text: string?, tapped: boolean?)
 	local tip = h.tip
-	if button == nil or text == nil or UserInputService.TouchEnabled and not UserInputService.MouseEnabled then
+	tip_tap += 1
+	if button == nil or text == nil or (UserInputService.TouchEnabled and not UserInputService.MouseEnabled and not tapped) then
 		tip.Visible = false
 		return
+	end
+	if tapped then
+		local tap = tip_tap
+		task.delay(1.5, function()
+			if tip_tap == tap then
+				tip.Visible = false
+			end
+		end)
 	end
 	tip.Text = text
 	-- AbsolutePosition is relative to the area below the top-bar inset even in this IgnoreGuiInset
@@ -147,7 +158,7 @@ local function make_button(h: Hud, key: string, icon: string, tooltip: string, o
 	b.Image = ""
 	b.Selectable = true
 	local corner = Instance.new("UICorner")
-	corner.CornerRadius = UDim.new(1, 0)
+	corner.CornerRadius = UDim.new(0, 12)
 	corner.Parent = b
 	local overlay = Instance.new("Frame")
 	overlay.Name = "StateOverlay"
@@ -157,7 +168,7 @@ local function make_button(h: Hud, key: string, icon: string, tooltip: string, o
 	overlay.Size = UDim2.fromScale(1, 1)
 	overlay.ZIndex = 2
 	local oc = Instance.new("UICorner")
-	oc.CornerRadius = UDim.new(1, 0)
+	oc.CornerRadius = UDim.new(0, 4)
 	oc.Parent = overlay
 	overlay.Parent = b
 	local img = Instance.new("ImageLabel")
@@ -174,7 +185,7 @@ local function make_button(h: Hud, key: string, icon: string, tooltip: string, o
 	glyph.Name = "Glyph"
 	glyph.BackgroundTransparency = 1
 	glyph.Size = UDim2.fromScale(1, 1)
-	glyph.FontFace = Font.new("rbxasset://fonts/families/Montserrat.json", Enum.FontWeight.Bold)
+	glyph.FontFace = Font.new("rbxasset://fonts/families/BuilderSans.json", Enum.FontWeight.Bold)
 	glyph.TextSize = 20
 	glyph.TextColor3 = Color3.new(1, 1, 1)
 	glyph.Visible = false
@@ -219,7 +230,11 @@ local function make_button(h: Hud, key: string, icon: string, tooltip: string, o
 		tween(OVERLAY_HOVER_T)
 	end)
 	b.Activated:Connect(function()
-		show_tip(h, nil, nil)
+		if UserInputService.TouchEnabled and not UserInputService.MouseEnabled then
+			show_tip(h, b, entry.tooltip, true)
+		else
+			show_tip(h, nil, nil)
+		end
 		on_press()
 	end)
 	b.Parent = h.bar
@@ -294,21 +309,21 @@ local function refresh_hud()
 	if h == nil then
 		return
 	end
-	-- Match-only controls: the title screen has no leaderboard, nation or game menu yet.
+	-- In a match the row is short, the map is the game (2026-11-01): your nation, the leaderboard and the game
+	-- menu, which holds help, settings and music. The title has no match to show: music, help, settings.
 	local in_match = Main.ui ~= nil and current_screen() ~= "title"
-	-- Phones: no music button in the row (Settings has the switch). With the gear the row is six
-	-- buttons, and beside Roblox's own (three with voice chat) that leaves an 852 px phone no room
-	-- for the status pill, which then drops under the row.
-	local music = h.buttons["music"]
 	local ctx = Main.ui and Main.ui.ctx
-	if music then
-		-- (the phone layout, as the status pill knows it: UIRoot's ctx.compact)
-		music.button.Visible = not (type(ctx) == "table" and ctx.compact == true)
-	end
-	for _, key in { "leaderboard", "home", "menu" } do
-		local e = h.buttons[key]
-		if e then
+	local phone = type(ctx) == "table" and ctx.compact == true
+	for key, e in h.buttons do
+		if key == "leaderboard" then
+			-- (phones: the status pill's tap opens it)
+			e.button.Visible = in_match and not phone
+		elseif key == "home" or key == "menu" then
 			e.button.Visible = in_match
+		elseif key == "music" then
+			e.button.Visible = not in_match and not phone
+		else
+			e.button.Visible = not in_match
 		end
 	end
 	-- a crate opening fills the screen: the row steps aside meanwhile
@@ -347,7 +362,7 @@ local function build_hud(player: Player)
 	tip.BackgroundColor3 = FILL
 	tip.BackgroundTransparency = 0.1
 	tip.TextColor3 = Color3.new(1, 1, 1)
-	tip.FontFace = Font.new("rbxasset://fonts/families/Montserrat.json", Enum.FontWeight.Medium)
+	tip.FontFace = Font.new("rbxasset://fonts/families/BuilderSans.json", Enum.FontWeight.Medium)
 	tip.TextSize = 14
 	tip.Visible = false
 	tip.ZIndex = 5
@@ -389,7 +404,7 @@ local function build_hud(player: Player)
 	make_button(h, "settings", "settings", "Settings", 5, function()
 		call(Main.ui, "open_settings")
 	end)
-	make_button(h, "menu", "exit", "Game menu", 6, function()
+	make_button(h, "menu", "settings", "Menu", 6, function()
 		call(Main.ui, "open_pause_menu")
 	end)
 	GuiService:GetPropertyChangedSignal("TopbarInset"):Connect(layout_hud)

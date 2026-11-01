@@ -207,7 +207,7 @@ function RatioSlider._redraw(self)
 	local ty = (self.size.Y - th) * 0.5
 	local cw = w / n
 	local _, at = UICtx.ratio_stop(ctx.ratio, ctx.ratio_max)
-	local radius = math.min(th * 0.5, 10.0)
+	local radius = math.min(th * 0.5, 3.0)
 	-- the row
 	set_rect(self._track, 0, ty, w, th)
 	self._track_corner.CornerRadius = UDim.new(0, math.floor(radius * s + 0.5))

@@ -49,34 +49,8 @@ end
 
 --- The plate silhouette of kind `k` (1-based) inset by `s` px.
 local function plate_raw(k: number, s: number): { any }
-	local name = KINDS[k]
-	if name == "city" then
-		return { "box", 8 + s, 8 + s, 104 - s, 104 - s, 24 - s * 0.6 }
-	elseif name == "port" then
-		return { "circle", 56, 56, 50 - s }
-	elseif name == "factory" then
-		return ngon(8, pi / 8, s, 52)
-	elseif name == "defense" then
-		return {
-			"poly",
-			56, 6 + s,
-			104 - s, 22 + s * 0.6,
-			104 - s, 56,
-			56, 106 - s,
-			8 + s, 56,
-			8 + s, 22 + s * 0.6,
-		}
-	elseif name == "sam" then
-		return { "poly", 56, 4 + s, 106 - s, 56, 56, 108 - s, 6 + s, 56 }
-	elseif name == "silo" then
-		return ngon(6, 0, s, 52)
-	elseif name == "artillery" then
-		return { "poly", 56, 6 + s * 1.4, 106 - s * 1.3, 96 - s * 0.6, 6 + s * 1.3, 96 - s * 0.6 }
-	elseif name == "airfield" then
-		return { "box", 4 + s, 22 + s, 108 - s, 90 - s, 34 - s }
-	end
-	-- railgun: a home-plate pentagon
-	return { "poly", 8 + s, 12 + s, 104 - s, 12 + s, 104 - s, 66, 56, 106 - s, 8 + s, 66 }
+	-- one plate for every kind: the glyph says which it is, a row of mixed shapes read as noise on a map
+	return { "box", 10 + s, 10 + s, 102 - s, 102 - s, 16 - s * 0.5 }
 end
 
 -- structure plates: rim strip and inset strip, 9 cells of 112 px
@@ -91,7 +65,7 @@ for k = 1, #KINDS do
 	Raster.draw(r, plate(k, 0), 1, 0, 0)
 	Raster.blit(rim, r, (k - 1) * CELL, 0)
 	local i = Raster.new(CELL, CELL)
-	Raster.draw(i, plate(k, 10 / FILL), 1, 0, 0)
+	Raster.draw(i, plate(k, 5 / FILL), 1, 0, 0)
 	Raster.blit(inset, i, (k - 1) * CELL, 0)
 end
 
@@ -105,9 +79,10 @@ end
 -- units, 13 x 13, pointing right: transport, trade, warship, atom, hydrogen, mirv, sam, shell, warhead, train,
 -- carriage, carriage_loaded
 local UNITS = {
-	transport = { { "poly", 0.8, 4, 9, 4, 12.4, 6.5, 9, 9.2, 0.8, 9.2 }, { "box", 2.6, 1.8, 6.4, 4.6, 0.4 } },
-	trade = { { "poly", 0.8, 5, 9, 5, 12.4, 7, 9, 9.6, 0.8, 9.6 }, { "box", 2, 2.2, 5.2, 5.2, 0.3 }, { "box", 5.8, 3, 8.6, 5.2, 0.3 } },
-	warship = { { "poly", 0.4, 4.4, 10, 4.4, 12.8, 6.5, 10, 8.6, 0.4, 8.6 }, { "circle", 5, 6.5, 2 }, { "line", 5, 6.5, 9.6, 6.5, 1.2 } },
+	-- ships, side on: a clean hull and one idea above it
+	transport = { { "poly", 0.8, 7.2, 12.4, 7.2, 10.4, 10.2, 2.2, 10.2 }, { "box", 3.2, 4.6, 8.2, 6.8, 0.3 }, { "box", 4.6, 2.8, 5.9, 4.4, 0.15 } },
+	trade = { { "poly", 0.6, 7.4, 12.6, 7.4, 10.8, 10.2, 1.8, 10.2 }, { "box", 1.6, 3.2, 3.2, 7, 0.2 }, { "box", 3.8, 5, 6.2, 7, 0.15 }, { "box", 6.7, 5, 9.1, 7, 0.15 }, { "box", 5, 3, 7.6, 4.6, 0.15 } },
+	warship = { { "poly", 0.2, 7.6, 12.8, 7.6, 10.6, 9.8, 1.6, 9.8 }, { "poly", 3, 7.2, 3.8, 5, 7.6, 5, 8.6, 7.2 }, { "box", 4.8, 2.4, 5.5, 5, 0.1 }, { "line", 7.2, 5.9, 11, 4.8, 0.7 } },
 	atom = { { "box", 1.8, 4.8, 9, 8.2, 1.4 }, { "poly", 9, 4.8, 12.6, 6.5, 9, 8.2 }, { "poly", 1.8, 4.8, 0.4, 2.4, 4.6, 4.8 }, { "poly", 1.8, 8.2, 0.4, 10.6, 4.6, 8.2 } },
 	hydrogen = { { "box", 1.4, 4.2, 9, 8.8, 1.6 }, { "poly", 9, 4.2, 12.8, 6.5, 9, 8.8 }, { "poly", 1.4, 4.2, 0.2, 1.6, 4.8, 4.2 }, { "poly", 1.4, 8.8, 0.2, 11.4, 4.8, 8.8 } },
 	mirv = { { "box", 1.6, 5, 9, 8, 1.2 }, { "poly", 9, 5, 12.6, 6.5, 9, 8 }, { "circle", 4, 2.6, 1.3 }, { "circle", 4, 10.4, 1.3 }, { "circle", 8, 1.8, 1.1 }, { "circle", 8, 11.2, 1.1 } },
@@ -119,13 +94,13 @@ local UNITS = {
 	carriage_loaded = { { "box", 0.8, 5, 12.2, 9, 0.8 }, { "box", 2.2, 2.6, 10.8, 5.2, 0.5 } },
 }
 local UNIT_ORDER = { "transport", "trade", "warship", "atom", "hydrogen", "mirv", "sam", "shell", "warhead", "train", "carriage", "carriage_loaded" }
-local UC = 13
+local UC = 32 -- px a cell: the shapes above are on a 13 grid, scaled up, so they stay clean at any zoom
 local body = Raster.new(UC * #UNIT_ORDER, UC)
 local rimu = Raster.new(UC * #UNIT_ORDER, UC)
 for k, name in UNIT_ORDER do
 	local m = Raster.new(UC, UC)
 	for _, item in UNITS[name] do
-		Raster.draw(m, item, 1, 0, 0)
+		Raster.draw(m, item, UC / 13, 0, 0)
 	end
 	-- outline: one pixel round the body (dilate, take the body away)
 	local o = Raster.new(UC, UC)
@@ -181,7 +156,7 @@ fs.writeFile("src/shared/Art/MapData.luau", table.concat(out, "\n") .. "\n")
 
 -- contact sheet: plates with glyphs over them in a few colours, and the units enlarged 8x
 local cols = { 255, 190, 120 }
-local sheet = Raster.new(UC * 8 * #UNIT_ORDER + 16, CELL * 3 + 16 + UC * 8 + 24)
+local sheet = Raster.new(UC * 3 * #UNIT_ORDER + 16, CELL * 3 + 16 + UC * 3 + 24)
 for row = 1, 3 do
 	for k = 1, #KINDS do
 		local x0 = 8 + (k - 1) * CELL
@@ -208,9 +183,9 @@ for k = 1, #UNIT_ORDER do
 			local b = buffer.readu8(body.a, y * body.w + (k - 1) * UC + x)
 			local r = buffer.readu8(rimu.a, y * rimu.w + (k - 1) * UC + x)
 			local v = math.max(b, r // 2)
-			for dy = 0, 7 do
-				for dx = 0, 7 do
-					local px, py = 8 + (k - 1) * UC * 8 + x * 8 + dx, 8 + CELL * 3 + 8 + y * 8 + dy
+			for dy = 0, 2 do
+				for dx = 0, 2 do
+					local px, py = 8 + (k - 1) * UC * 3 + x * 3 + dx, 8 + CELL * 3 + 8 + y * 3 + dy
 					if px < sheet.w then
 						buffer.writeu8(sheet.a, py * sheet.w + px, v)
 					end

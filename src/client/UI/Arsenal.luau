@@ -67,7 +67,7 @@ Arsenal.SUBTITLE = "Unlock once, keep it forever. Earn Stars by playing matches.
 Arsenal.LIST_W = 236
 Arsenal.LIST_W_PHONE = 190
 Arsenal.ROW_H = 46
-Arsenal.ROW_H_PHONE = 38
+Arsenal.ROW_H_PHONE = 44
 Arsenal.DETAIL_W = 470
 Arsenal.PREVIEW_H = 228
 --- "PRESS AGAIN" stands this long before the Stars button goes back to its price.
@@ -77,9 +77,9 @@ Arsenal.WAIT_S = 30.0
 --- A note under the buttons stays this long.
 Arsenal.NOTE_S = 4.0
 
-local FONT_H = Font.new("rbxasset://fonts/families/Montserrat.json", Enum.FontWeight.Heavy)
-local FONT_B = Font.new("rbxasset://fonts/families/Montserrat.json", Enum.FontWeight.Bold)
-local FONT_M = Font.new("rbxasset://fonts/families/Montserrat.json", Enum.FontWeight.Medium)
+local FONT_H = Font.new("rbxasset://fonts/families/BuilderSans.json", Enum.FontWeight.ExtraBold)
+local FONT_B = Font.new("rbxasset://fonts/families/BuilderSans.json", Enum.FontWeight.Bold)
+local FONT_M = Font.new("rbxasset://fonts/families/BuilderSans.json", Enum.FontWeight.Medium)
 local GOLD = Color3.fromRGB(255, 200, 61)
 local GOLD_DARK = Color3.fromRGB(64, 40, 4)
 -- BUY NOW: its face's gradient (top, bottom; brighter under the pointer), its lip, the ink of its price
@@ -92,11 +92,11 @@ local GREEN_INK = Color3.fromRGB(10, 59, 60)
 local OWNED_GREEN = Color3.fromRGB(110, 230, 155)
 local WHITE = Color3.new(1, 1, 1)
 local MUTED = Color3.fromRGB(170, 182, 211)
-local ROW = Color3.fromRGB(19, 43, 47)
+local ROW = Color3.fromRGB(26, 30, 62)
 local ROW_ON = Color3.fromRGB(38, 53, 90)
 local CHIP = Color3.fromRGB(38, 53, 90)
 local BAR_OFF = Color3.fromRGB(44, 58, 94)
-local BAR_LIP = Color3.fromRGB(22, 48, 52)
+local BAR_LIP = Color3.fromRGB(22, 26, 56)
 --- the dark a preview's ground fades into
 local NIGHT = Color3.fromRGB(6, 18, 20)
 local ROBUX = "rbxasset://textures/ui/common/robux@3x.png"
@@ -203,7 +203,7 @@ function Arsenal.new(c: any)
 	end)
 	self:add_child(self._dim)
 	self._panel = GlassPanel.new(20.0, 16.0, 18, true, 34)
-	self._panel:set_tint(UITheme.rgba(0.036, 0.066, 0.075, 0.97))
+	self._panel:set_tint(UITheme.GLASS_SOLID)
 	self:add_child(self._panel)
 	local v = UITheme.vbox(12)
 	self._v = v
@@ -931,8 +931,8 @@ function Arsenal._build_cta(self)
 	local stars = inv.stars or 0
 	local pending = self._pending
 	local busy = pending ~= nil and pending.key == it.key
-	local bh = if compact then 38 else 48
-	local sh = if compact then 30 else 36
+	local bh = if compact then 44 else 48
+	local sh = math.max(if compact then 30 else 36, UITheme.touch_min)
 	local y = 0
 	if inv.unlocks[it.key] then
 		local own = button(d.cta, "Owned", y, bh, u, OWNED_GREEN, OWNED_GREEN)

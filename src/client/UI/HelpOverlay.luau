@@ -273,7 +273,7 @@ HelpOverlay.SECTIONS = {
 		icon = "target",
 		color = "gold",
 		title = "Landmarks",
-		text = "Badges on the map pay whoever holds the ground under them: Mints ($, gold), Garrisons (+, troop cap), Citadels (#, defence), Harbors (~, trade gold), Granaries (%, regrowth) and Foundries (^, a share of every building back). In the Reckoning they pay double. Hold them, or take them.",
+		text = "Badges on the map pay whoever holds the ground under them: Gold Mines (a pickaxe: gold), Garrisons (a tent: troop cap), Citadels (a castle: defence), Harbors (a lighthouse: trade gold), Granaries (wheat: regrowth) and Foundries (an anvil: a share of every building back). In the Reckoning they pay double. Hold them, or take them.",
 	},
 	{
 		icon = "atom",
@@ -390,7 +390,7 @@ function HelpOverlay.new(c: any)
 	end)
 	self:add_child(self._dim)
 	self._panel = GlassPanel.new(0.0, 0.0, 18, true, 34)
-	self._panel:set_tint(UITheme.rgba(0.036, 0.066, 0.075, 0.94))
+	self._panel:set_tint(UITheme.GLASS_SOLID)
 	self:add_child(self._panel)
 	return self
 end

@@ -30,8 +30,8 @@ local GOLD_LIGHT = Color3.fromRGB(255, 238, 178)
 local GOLD_DARK = Color3.fromRGB(176, 120, 22)
 local INK = Color3.fromRGB(46, 28, 2)
 local WHITE = Color3.new(1, 1, 1)
-local FONT_H = Font.new("rbxasset://fonts/families/Montserrat.json", Enum.FontWeight.Heavy)
-local FONT_B = Font.new("rbxasset://fonts/families/Montserrat.json", Enum.FontWeight.Bold)
+local FONT_H = Font.new("rbxasset://fonts/families/BuilderSans.json", Enum.FontWeight.ExtraBold)
+local FONT_B = Font.new("rbxasset://fonts/families/BuilderSans.json", Enum.FontWeight.Bold)
 
 local function new(class: string, props: { [string]: any }, parent: Instance?): any
 	local i = Instance.new(class)

@@ -41,9 +41,9 @@ FlagShop.GRANT_WAIT_S = 30
 --- The bundle banner's height (logical px).
 FlagShop.BANNER_H = 46
 
-local FONT = Font.new("rbxasset://fonts/families/Montserrat.json", Enum.FontWeight.Bold)
-local FONT_H = Font.new("rbxasset://fonts/families/Montserrat.json", Enum.FontWeight.Heavy)
-local FONT_M = Font.new("rbxasset://fonts/families/Montserrat.json", Enum.FontWeight.Medium)
+local FONT = Font.new("rbxasset://fonts/families/BuilderSans.json", Enum.FontWeight.Bold)
+local FONT_H = Font.new("rbxasset://fonts/families/BuilderSans.json", Enum.FontWeight.ExtraBold)
+local FONT_M = Font.new("rbxasset://fonts/families/BuilderSans.json", Enum.FontWeight.Medium)
 local ROBUX = "rbxasset://textures/ui/common/robux@3x.png"
 local WHITE = Color3.new(1, 1, 1)
 local GOLD = Color3.fromRGB(255, 200, 61)
@@ -134,7 +134,7 @@ function FlagShop.new(c: any)
 	end)
 	self:add_child(self._dim)
 	self._panel = GlassPanel.new(22.0, 18.0, 18, true, 34)
-	self._panel:set_tint(UITheme.rgba(0.036, 0.066, 0.075, 0.96))
+	self._panel:set_tint(UITheme.GLASS_SOLID)
 	self:add_child(self._panel)
 	local v = UITheme.vbox(10)
 	self._v = v
@@ -348,7 +348,10 @@ end
 -- ---------------------------------------------------------------------------------------------
 
 function FlagShop._card_size(self): Vector2
-	return if self.ctx.compact then FlagShop.CARD_PHONE else FlagShop.CARD
+	-- (touch: the card grows by what its button grows)
+	local compact = self.ctx.compact
+	local base = if compact then FlagShop.CARD_PHONE else FlagShop.CARD
+	return base + Vector2.new(0, math.max(0, UITheme.touch_min - (if compact then 26 else 30)))
 end
 
 function FlagShop._section(self, order: number, title: string, color: Color3, ends: number, label: string)
@@ -445,7 +448,7 @@ function FlagShop._bundle(self, order: number, sid: string)
 	local price = Prices.robux(key)
 	local off = if each > 0 then math.floor((1 - price / each) * 100 + 0.5) else 0
 	local pending = self._pending ~= nil and self._pending.set == sid
-	local h = FlagShop.BANNER_H
+	local h = math.max(FlagShop.BANNER_H, UITheme.touch_min + 14)
 	local row = new("Frame", {
 		Name = "Bundle",
 		BackgroundColor3 = WHITE,
@@ -635,7 +638,7 @@ function FlagShop._card(self, parent: Instance, key: string, pos: Vector2, size:
 		self._host:_part(chip, "TextTransparency", 1.0)
 	end
 	-- the button: the price, WEAR / WEARING, or a moment's wait
-	local bh = if hero then (if self.ctx.compact then 32 else 38) else (if self.ctx.compact then 26 else 30)
+	local bh = math.max(if hero then (if self.ctx.compact then 32 else 38) else (if self.ctx.compact then 26 else 30), UITheme.touch_min)
 	local btn = new("TextButton", {
 		Name = "Buy",
 		AutoButtonColor = false,
@@ -847,7 +850,7 @@ function FlagShop._content_height(self, cols: number): number
 	for _, s in c.sets do
 		grid(s.keys)
 		if self:_bundle_shown(s.id) then
-			h += FlagShop.BANNER_H + 10
+			h += math.max(FlagShop.BANNER_H, UITheme.touch_min + 14) + 10
 		end
 	end
 	grid(c.daily)

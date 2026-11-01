@@ -175,8 +175,7 @@ function Row.set_row(self, o: any, r: number)
 	end
 	self.name_l:set_text(o.name)
 	self.land:set_text(T.fmt_pct(s:land_share(o.id)))
-	self.troops:set_text(T.fmt_troops(o.troops))
-	-- Threat context: a neighbour with over 3x our army reads red.
+	-- Threat context: a neighbour with over 3x our army reads red, with a mark for those who can't tell the red.
 	local mine = ctx:my()
 	local threat = mine ~= nil
 		and not self.is_me
@@ -185,6 +184,7 @@ function Row.set_row(self, o: any, r: number)
 		and not s:are_allies(ctx:me(), o.id)
 		and ctx.borders ~= nil
 		and ctx.borders:borders_owner(o.id)
+	self.troops:set_text((if threat then "! " else "") .. T.fmt_troops(o.troops))
 	T.set_font_color(self.troops, if threat then T.RED else T.TEXT_2)
 	local ally = s:are_allies(ctx:me(), o.id)
 	local traitor = s:is_traitor(o.id)
@@ -353,10 +353,10 @@ function Leaderboard.new(c: any)
 	pill:set_icon("leaderboard")
 	pill:add_theme_constant_override("icon_max_width", 16)
 	pill:set_min_size(Vector2.new(0, 40))
-	pill:add_theme_stylebox_override("normal", T.flat(T.GLASS, 999, T.LINE, 1, 14, 6))
-	pill:add_theme_stylebox_override("hover", T.flat(T.GLASS_RAISED, 999, T.LINE_2, 1, 14, 6))
-	pill:add_theme_stylebox_override("pressed", T.flat(T.GLASS_RAISED, 999, T.LINE_2, 1, 14, 6))
-	pill:add_theme_stylebox_override("hover_pressed", T.flat(T.GLASS_RAISED, 999, T.LINE_2, 1, 14, 6))
+	pill:add_theme_stylebox_override("normal", T.flat(T.GLASS, T.R_MD, T.LINE, 1, 14, 6))
+	pill:add_theme_stylebox_override("hover", T.flat(T.GLASS_RAISED, T.R_MD, T.LINE_2, 1, 14, 6))
+	pill:add_theme_stylebox_override("pressed", T.flat(T.GLASS_RAISED, T.R_MD, T.LINE_2, 1, 14, 6))
+	pill:add_theme_stylebox_override("hover_pressed", T.flat(T.GLASS_RAISED, T.R_MD, T.LINE_2, 1, 14, 6))
 	pill:set_font_size(13)
 	pill.pressed:Connect(function()
 		self:set_open(true)
@@ -404,7 +404,8 @@ end
 
 function Leaderboard.apply_layout(self, top: number)
 	local ctx = self.ctx
-	self.pill_enabled = not ctx.compact
+	-- (the rank chip merged into the status ribbon, 2026-11-01: its rank is there and its tap opens this)
+	self.pill_enabled = false
 	-- Phones never keep the board open (it is a peek): a screen that turns into one closes it. Other
 	-- screens keep it as it is (closed since the match began, or as the player left it).
 	local key = if ctx.compact then "compact" else (if ctx.touch then "touch" else "desktop")

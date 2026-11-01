@@ -158,6 +158,29 @@ do
 		"two crates: two different items (" .. tostring(a) .. ", " .. tostring(b) .. ")"
 	)
 	expect(not ok3 and why == "no crate" and rows.u99.credits.crate == 0, "no credit left: nothing opens")
+	-- where paid random items are restricted the server refuses, whatever the client sends; the credit stays
+	expect(
+		Purchases.process_receipt({ PlayerId = 99, ProductId = Products.crate.id, PurchaseId = "c3" }) == "granted",
+		"a third crate"
+	)
+	local owned_before = 0
+	for _ in rows.u99.owned do
+		owned_before += 1
+	end
+	Purchases.crates_allowed = function()
+		return false
+	end
+	local okr, whyr = Purchases.open_crate(B)
+	local owned_after = 0
+	for _ in rows.u99.owned do
+		owned_after += 1
+	end
+	expect(
+		not okr and whyr == "not allowed" and rows.u99.credits.crate == 1 and owned_after == owned_before,
+		"restricted: nothing opens, nothing rolled, the credit stays saved"
+	)
+	Purchases.crates_allowed = nil
+	rows.u99.credits.crate = 0
 	expect(rows.u99.owned[a] and rows.u99.owned[b], "both saved as owned")
 	local ia, ib = Cosmetics.item(a), Cosmetics.item(b)
 	expect(rows.u99.equipped[ia.kind] == a, "the first " .. ia.kind .. " was equipped (its slot was empty)")

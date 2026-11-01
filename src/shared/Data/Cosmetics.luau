@@ -514,6 +514,43 @@ function Cosmetics.odds(owned: { [string]: any }): { { rarity: any, odds: number
 	return out
 end
 
+--- The player's odds of each item a crate can still give: a rarity's odds shared evenly among its items
+--- they don't own (what roll does). { {item, rarity, odds} } in RARITIES order, then catalog order.
+function Cosmetics.item_odds(owned: { [string]: any }): { { item: any, rarity: any, odds: number } }
+	local out = {}
+	for _, e in Cosmetics.odds(owned) do
+		if e.left > 0 then
+			for _, it in order do
+				if it.rarity == e.rarity.id and not owned[it.id] then
+					table.insert(out, { item = it, rarity = e.rarity, odds = e.odds / e.left })
+				end
+			end
+		end
+	end
+	return out
+end
+
+--- Roblox's wording for rounded odds (paid random items policy).
+Cosmetics.ODDS_ROUNDED_NOTE = "Probabilities are rounded; total of displayed individual probabilities may not equal 100%."
+
+--- A probability (0..1) as a percentage: exact when it fits in two decimals, otherwise rounded to at
+--- least four places below its first non-zero digit, as the policy asks. (text, was_rounded)
+function Cosmetics.odds_text(p: number): (string, boolean)
+	local v = p * 100
+	local whole = math.floor(v * 100 + 0.5) / 100
+	if math.abs(v - whole) < 1e-9 then
+		local s = string.format("%.2f", whole)
+		s = string.gsub(string.gsub(s, "0+$", ""), "%.$", "")
+		return s .. "%", false
+	end
+	local places = 4
+	if v < 1 then
+		-- (0.0123 has its first non-zero digit 2 places down: 2 + 4)
+		places = math.ceil(-math.log10(v) - 1e-9) + 4
+	end
+	return string.format("%." .. tostring(places) .. "f%%", v), true
+end
+
 --- Roll a crate: an item the player doesn't own (nil when they own everything). r1, r2 in [0, 1).
 function Cosmetics.roll(owned: { [string]: any }, r1: number, r2: number): string?
 	local odds = Cosmetics.odds(owned)

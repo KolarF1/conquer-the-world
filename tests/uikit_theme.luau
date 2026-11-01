@@ -44,20 +44,18 @@ assert(T.luminance(dark) > T.luminance(Color3.new(0.1, 0.1, 0.2)), "owner_ui_col
 eq(T.msg_color(3), T.RED, "msg_color alert")
 eq(T.msg_icon(4), "alliance", "msg_icon alliance")
 
--- metrics: template widths of numbers in the UI font. The values are Montserrat's (tools/art/make_font_metrics.py reads
--- Roblox Studio's own TTFs); the upstream's Rubik literals (76, 89, 57, 59, 79, 78, 45) were replaced on purpose when
--- the font changed. Cross-check, fontTools directly at weight 700: "888.8M" at 20 px = 80.3, "8:88:88" = 80.5,
--- "TROOPS" at 11 px = 48.5; the kit rounds up by under a pixel.
-eq(T.text_width("888.8M", 20, 700), 81, "text_width 888.8M")
-eq(T.text_width("8888.8M", 20, 700), 95, "text_width 8888.8M")
+-- metrics: template widths of numbers in the UI font. The values are Builder Sans's (tools/art/make_font_metrics.py reads
+-- Roblox Studio's own fonts); replaced on purpose when the font changed from Montserrat on 2026-11-01.
+eq(T.text_width("888.8M", 20, 700), 80, "text_width 888.8M")
+eq(T.text_width("8888.8M", 20, 700), 94, "text_width 8888.8M")
 eq(T.text_width("/ 888.8M", 13, 500), 60, "text_width cap")
-eq(T.text_width("+888.8K/s", 11, 700), 59, "text_width rate")
-eq(T.text_width("888.8M at war", 11, 700), 84, "text_width at war")
-eq(T.text_width("8:88:88", 20, 700), 81, "text_width clock")
-eq(T.text_width("TROOPS", 11, 700), 49, "text_width TROOPS")
--- line heights (ascent + descent rounded outwards; Montserrat's hhea is 968 + 251)
+eq(T.text_width("+888.8K/s", 11, 700), 57, "text_width rate")
+eq(T.text_width("888.8M at war", 11, 700), 80, "text_width at war")
+eq(T.text_width("8:88:88", 20, 700), 82, "text_width clock")
+eq(T.text_width("TROOPS", 11, 700), 43, "text_width TROOPS")
+-- line heights (ascent + descent rounded outwards; Builder Sans's hhea)
 eq(T.line_height(10), 13, "line_height 10")
-eq(T.line_height(11), 14, "line_height 11")
+eq(T.line_height(11), 15, "line_height 11")
 eq(T.line_height(12), 16, "line_height 12")
 eq(T.line_height(20), 26, "line_height 20")
 -- UI scale
@@ -71,7 +69,7 @@ local st = T.flat(T.GLASS, T.R_LG, T.LINE, 1, 16, 12)
 local l1, t1, r1, b1 = T.margins(st)
 assert(l1 == 16 and t1 == 12 and r1 == 16 and b1 == 12, "margins")
 local th = T.theme()
-assert(th.PrimaryButton.styles.normal.bw_bottom == 3, "primary lip")
+assert((th.PrimaryButton.styles.normal.bw_bottom or 0) == 0, "primary is a flat pill: no lip")
 assert(th.ChipButton.font_size == 13, "chip font size")
 
 print("uikit_theme ok")

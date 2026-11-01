@@ -66,7 +66,7 @@ FxLayer.BANNER_LIFT = 0.3
 FxLayer.GOLD_Y_OFFSET = 8 -- full-size tiles below the name
 FxLayer.GOLD_SIZE = 6 -- full-size tiles
 FxLayer.GOLD_MIN_PX = 15
-FxLayer.GOLD_FONT = Font.new("rbxasset://fonts/families/Montserrat.json", Enum.FontWeight.Bold)
+FxLayer.GOLD_FONT = Font.new("rbxasset://fonts/families/BuilderSans.json", Enum.FontWeight.Bold)
 --- Income popups: lifetime, rise (full-size tiles a second), where it starts
 --- (tiles above the tile), the font (tiles; at least BONUS_MIN_PX on screen), the zoom (px per full-size
 --- tile) under which none are drawn, and how many may be up at once.

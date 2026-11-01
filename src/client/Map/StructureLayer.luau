@@ -42,7 +42,7 @@ local StructureLayer = {}
 StructureLayer.__index = StructureLayer
 
 -- icon sizes and zooms
-StructureLayer.ICON_SIZE = 30 -- 60 device px at device pixel ratio 2
+StructureLayer.ICON_SIZE = 26
 StructureLayer.DEVICE_RATIO = 2.0
 StructureLayer.DOTS_ZOOM = 1.2
 StructureLayer.DOT_SCALE = 0.3
@@ -52,7 +52,19 @@ StructureLayer.GROW_ZOOM = 7.0
 --- the share of it the glyph spans (ICON_FILL / SHAPE_SCALE of the plate), set with the art
 StructureLayer.SHAPE_SCALE = table.clone(Sprites.shape_scale)
 StructureLayer.ICON_FILL = table.clone(Sprites.icon_fill)
-StructureLayer.FILL_V = 0.65
+--- Each kind's plate colour (Defs.S_*, 0-based), the same as its build slot's tile: what it is reads from
+--- the colour and the white glyph, whose it is from the ground it stands on.
+StructureLayer.KIND_FILL = {
+	[0] = Color3.fromRGB(44, 110, 190),
+	Color3.fromRGB(14, 132, 150),
+	Color3.fromRGB(196, 120, 22),
+	Color3.fromRGB(82, 98, 116),
+	Color3.fromRGB(106, 74, 176),
+	Color3.fromRGB(176, 60, 40),
+	Color3.fromRGB(120, 92, 60),
+	Color3.fromRGB(40, 120, 110),
+	Color3.fromRGB(70, 70, 150),
+}
 StructureLayer.BORDER_V = 0.1
 StructureLayer.BORDER_DARKEN = 0.125
 StructureLayer.CONSTRUCT_FILL = Color3.fromRGB(198, 198, 198)
@@ -290,7 +302,7 @@ local function level_label(p: Plate): TextLabel
 		l.AnchorPoint = Vector2.new(0.5, 1)
 		l.Position = UDim2.fromScale(0.5, 0.1)
 		l.Size = UDim2.fromScale(1, 0.6)
-		l.FontFace = Font.new("rbxasset://fonts/families/Montserrat.json", Enum.FontWeight.Bold)
+		l.FontFace = Font.new("rbxasset://fonts/families/BuilderSans.json", Enum.FontWeight.Bold)
 		l.TextScaled = true
 		l.TextColor3 = Color3.new(1, 1, 1)
 		l.ZIndex = StructureLayer.Z + 3
@@ -337,7 +349,7 @@ function StructureLayer._style(self: any, p: Plate, s: any, building: boolean)
 		fill_col, rim_col = StructureLayer.CONSTRUCT_FILL, StructureLayer.CONSTRUCT_BORDER
 	else
 		local c = st:owner_color(s.owner)
-		fill_col = value_scale(c, StructureLayer.FILL_V)
+		fill_col = StructureLayer.KIND_FILL[k] or value_scale(c, 0.42)
 		local b = if s.owner == st.local_owner then c else border_color(c)
 		rim_col = value_scale(b, StructureLayer.BORDER_V)
 	end

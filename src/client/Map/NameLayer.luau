@@ -31,7 +31,7 @@ local readu8 = buffer.readu8
 local NameLayer = {}
 NameLayer.__index = NameLayer
 
-NameLayer.FONT = Font.new("rbxasset://fonts/families/Montserrat.json", Enum.FontWeight.Bold)
+NameLayer.FONT = Font.new("rbxasset://fonts/families/BuilderSans.json", Enum.FontWeight.Bold)
 NameLayer.NAME_SCALE_FACTOR = 0.4
 NameLayer.NAME_SCALE_CAP = 3.0
 NameLayer.TROOP_SIZE_MULT = 0.6

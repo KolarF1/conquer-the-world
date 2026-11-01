@@ -179,7 +179,7 @@ Tutorial.STEPS = {
 		kind = "lesson",
 		touch = "Fight for landmarks",
 		desktop = "Fight for landmarks",
-		body = "Badges on the map mark Mints ($) and Garrisons (+). Whoever owns the ground under one gets its bonus: a Mint adds {mint}% to your gold, a Garrison {garrison}% to your troop cap. They are what wars here are about.",
+		body = "Round badges on the map mark landmarks, like Gold Mines (a pickaxe) and Garrisons (a tent). Whoever owns the ground under one gets its bonus: a Gold Mine adds {mint}% to your gold, a Garrison {garrison}% to your troop cap. They are what wars here are about.",
 	},
 	{
 		id = "eras",

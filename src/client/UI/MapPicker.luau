@@ -52,7 +52,7 @@ function MapPicker.new(c: any)
 	end)
 	self:add_child(self._dim)
 	self._panel = GlassPanel.new(22.0, 20.0, 18, true, 34)
-	self._panel:set_tint(UITheme.rgba(0.036, 0.066, 0.075, 0.95))
+	self._panel:set_tint(UITheme.GLASS_SOLID)
 	self:add_child(self._panel)
 	local v = UITheme.vbox(12)
 	self._panel:add_child(v)
@@ -180,7 +180,7 @@ function MapPicker._card(self, e: any, order: number): TextButton
 	local name = Instance.new("TextLabel")
 	name.Name = "MapName"
 	name.BackgroundTransparency = 1
-	name.FontFace = Font.new("rbxasset://fonts/families/Montserrat.json", Enum.FontWeight.Bold)
+	name.FontFace = Font.new("rbxasset://fonts/families/BuilderSans.json", Enum.FontWeight.Bold)
 	name.TextSize = math.floor(14 * s)
 	name.TextColor3 = Color3.new(1, 1, 1)
 	name.TextTruncate = Enum.TextTruncate.AtEnd
@@ -193,7 +193,7 @@ function MapPicker._card(self, e: any, order: number): TextButton
 	local sub = Instance.new("TextLabel")
 	sub.Name = "Size"
 	sub.BackgroundTransparency = 1
-	sub.FontFace = Font.new("rbxasset://fonts/families/Montserrat.json", Enum.FontWeight.Medium)
+	sub.FontFace = Font.new("rbxasset://fonts/families/BuilderSans.json", Enum.FontWeight.Medium)
 	sub.TextSize = math.floor(11 * s)
 	sub.TextColor3 = Color3.fromRGB(170, 180, 205)
 	sub.Text = if e.width and e.height then string.format("%d × %d", e.width, e.height) else ""

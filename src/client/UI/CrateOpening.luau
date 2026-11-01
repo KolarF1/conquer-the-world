@@ -57,8 +57,8 @@ local GOLD = Color3.fromRGB(255, 190, 72)
 local GOLD_LIGHT = Color3.fromRGB(255, 226, 150)
 local AMBIENT = ChestView.AMBIENT
 
-local FONT_B = Font.new("rbxasset://fonts/families/Montserrat.json", Enum.FontWeight.Heavy)
-local FONT_M = Font.new("rbxasset://fonts/families/Montserrat.json", Enum.FontWeight.Bold)
+local FONT_B = Font.new("rbxasset://fonts/families/BuilderSans.json", Enum.FontWeight.ExtraBold)
+local FONT_M = Font.new("rbxasset://fonts/families/BuilderSans.json", Enum.FontWeight.Bold)
 
 local function c3(hex: number): Color3
 	return Color3.fromRGB((hex // 65536) % 256, (hex // 256) % 256, hex % 256)
@@ -114,6 +114,7 @@ function CrateOpening.new(c: any)
 	self.ctx = c
 	self.wear = Signal.new()
 	self.again = Signal.new()
+	self.details = Signal.new()
 	self.closed = Signal.new()
 	self.shown = Signal.new() -- (open: boolean) the show starts / ends (the top bar row hides)
 	self.is_open = false
@@ -395,6 +396,12 @@ function CrateOpening._build(self)
 		end
 	end)
 	row:add_child(self._again_b)
+	-- (ANOTHER can buy a crate from here: the odds stay one press away)
+	self._details_b = UITheme.button("DETAILS", "GlassButton", "", 48.0)
+	self._details_b.pressed:Connect(function()
+		self.details:Fire()
+	end)
+	row:add_child(self._details_b)
 	self._done_b = UITheme.button("DONE", "GlassButton", "", 48.0)
 	self._done_b.pressed:Connect(function()
 		self:close()
@@ -462,8 +469,9 @@ function CrateOpening._layout(self)
 	local compact = self.ctx.compact
 	local bh = if compact then 42 else 48
 	self._wear_b:set_min_size(Vector2.new(if compact then 128 else 165, bh))
-	self._again_b:set_min_size(Vector2.new(if compact then 140 else 175, bh))
-	self._done_b:set_min_size(Vector2.new(if compact then 96 else 120, bh))
+	self._again_b:set_min_size(Vector2.new(if compact then 132 else 175, bh))
+	self._details_b:set_min_size(Vector2.new(if compact then 88 else 110, bh))
+	self._done_b:set_min_size(Vector2.new(if compact then 76 else 120, bh))
 	local rs = self._row:get_combined_minimum_size()
 	local ry = math.min(area.Max.Y - rs.Y - 8, y / u + math.max(8, SL * 0.04))
 	local rx = cx / u
@@ -1104,6 +1112,7 @@ function CrateOpening.refresh_buttons(self)
 	self._wear_b:set_disabled(wearing)
 	self._wear_b:set_text(if wearing then "WEARING" else "WEAR IT")
 	self._again_b:set_visible(info.can_more == true)
+	self._details_b:set_visible(info.can_more == true)
 	if (info.crates or 0) > 0 then
 		self._again_b:set_icon("crate")
 		self._again_b:set_text(if info.crates > 1 then string.format("OPEN NEXT (%d)", info.crates) else "OPEN NEXT")
@@ -1119,6 +1128,9 @@ end
 -- ---------------------------------------------------------------------------------------------
 
 function CrateOpening._kick(self, px: number)
+	if UITheme.reduced_motion then
+		return
+	end
 	self._shake = math.max(self._shake or 0, px)
 end
 

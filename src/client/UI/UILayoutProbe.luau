@@ -101,7 +101,7 @@ function UILayoutProbe.update_world_safe_area(self)
 		-- press; they float over the globe instead of narrowing this band, so toggling them never moves
 		-- the camera. Map labels still keep clear of them (WorldView hud controls).
 		local right_x = vp.X - ctx.insets.z
-		local left_x = ctx.insets.x
+		local left_x = math.max(ctx.insets.x, ctx.rail_w or 0.0)
 		if bottom_y - top_y > 80.0 and right_x - left_x > 160.0 then
 			r = Rect.new(left_x, top_y, right_x, bottom_y)
 		end

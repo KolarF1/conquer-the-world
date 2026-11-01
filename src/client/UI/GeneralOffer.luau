@@ -64,7 +64,7 @@ end
 
 function GeneralOffer._build(self)
 	self._panel = GlassPanel.new(24.0, 18.0, 18, true, 34)
-	self._panel:set_tint(UITheme.rgba(0.036, 0.066, 0.075, 0.97))
+	self._panel:set_tint(UITheme.GLASS_SOLID)
 	self._panel:set_border(UITheme.c(UITheme.GOLD, 0.45))
 	self:add_child(self._panel)
 	local v = UITheme.vbox(10)

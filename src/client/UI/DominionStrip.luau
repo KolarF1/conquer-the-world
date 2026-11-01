@@ -20,8 +20,8 @@ local DominionStrip = {}
 DominionStrip.__index = DominionStrip
 
 DominionStrip.ROMAN = { "I", "II", "III", "IV" }
-DominionStrip.SEG_W = 34
-DominionStrip.SEG_H = 6
+DominionStrip.SEG_W = 26
+DominionStrip.SEG_H = 4
 
 --- What the strip shows for a match with era starts `eras`, `since_play` ticks into play, and a
 --- player who picked `picks` (doctrine keys): the era, its name, how far through it (0..1), seconds to
@@ -86,10 +86,6 @@ function DominionStrip.new(c: any)
 	self._next = T.label("", 11, 600, T.TEXT_2)
 	self._next.size_flags_vertical = W.SHRINK_CENTER
 	row:add_child(self._next)
-	local sp = W.Control.new()
-	sp.size_flags_horizontal = W.EXPAND_FILL
-	sp:set_mouse_filter(W.MOUSE_IGNORE)
-	row:add_child(sp)
 	self._pips = T.hbox(4)
 	self._pips.size_flags_vertical = W.SHRINK_CENTER
 	self._pip_labels = {}
@@ -170,6 +166,20 @@ function DominionStrip.refresh(self)
 			self.era_changed:Fire(m.era)
 		end
 	end
+end
+
+--- The card over the era's name: what this era is and what comes next.
+function DominionStrip.hint_spec(self): { [string]: any }
+	local s = self.ctx.state
+	if not self:active() then
+		return { title = "Era" }
+	end
+	local m = DominionStrip.model(s.eras, self.ctx:render_tick() - s.playing_since, nil)
+	return {
+		title = m.name,
+		body = m.blurb,
+		rows = if m.next_s ~= nil then { { m.next_name .. " in", UITheme.fmt_time(m.next_s), UITheme.TEXT } } else {},
+	}
 end
 
 --- A new match: forget the era shown.

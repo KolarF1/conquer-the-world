@@ -266,6 +266,10 @@ function Tooltip._compute_target(self): Vector2
 			if y < margin then
 				y = r.Max.Y + 10.0
 			end
+			-- (a slot in the left rail: beside it)
+			if a.rail then
+				x, y = r.Max.X + 10.0, r.Min.Y
+			end
 			p = Vector2.new(x, y)
 		end
 	else

@@ -57,6 +57,15 @@ function BuildButton.new(c: any, k: string, hk: string)
 		t.Parent = g
 		return t
 	end
+	local tile = Instance.new("Frame")
+	tile.Name = "Tile"
+	tile.BorderSizePixel = 0
+	tile.ZIndex = 3
+	tile.Parent = g
+	local tc = Instance.new("UICorner")
+	tc.CornerRadius = UDim.new(0.5, 0)
+	tc.Parent = tile
+	self._tile = tile
 	local ic = Instance.new("ImageLabel")
 	ic.Name = "Glyph"
 	ic.BackgroundTransparency = 1
@@ -115,6 +124,15 @@ function BuildButton.set_compact(self, on: boolean, touch: boolean)
 	end
 	self:set_min_size(ms)
 	self.icon_px = if on then 20.0 else 24.0
+	self:_redraw()
+end
+
+--- The desktop's left rail: the icon alone with its hotkey and count beside it; name and price in the hover card.
+function BuildButton.set_rail(self, on: boolean)
+	self.rail = on
+	if on then
+		self:set_min_size(Vector2.new(50, math.max(42, UITheme.touch_min)))
+	end
 	self:_redraw()
 end
 
@@ -183,11 +201,13 @@ end
 --- Short shake + red flash when a disabled slot is used.
 function BuildButton.deny(self)
 	self._flash = 1.0
-	local t = self:create_tween()
-	local base = self.position.X
-	t:tween_property(self, "position:x", base - 3.0, 0.04)
-	t:tween_property(self, "position:x", base + 3.0, 0.06)
-	t:tween_property(self, "position:x", base, 0.05)
+	if not UITheme.reduced_motion then
+		local t = self:create_tween()
+		local base = self.position.X
+		t:tween_property(self, "position:x", base - 3.0, 0.04)
+		t:tween_property(self, "position:x", base + 3.0, 0.06)
+		t:tween_property(self, "position:x", base, 0.05)
+	end
 	self:set_process(true)
 end
 
@@ -342,8 +362,8 @@ function BuildButton._redraw(self)
 	local locked = self._av.locked == true
 	local arsenal_locked = self._av.arsenal ~= nil
 	local nuke = R.is_nuke(self.kind)
-	local bg: any = UITheme.rgba(1, 1, 1, 0.035)
-	local border: any = UITheme.rgba(1, 1, 1, 0.07)
+	local bg: any = UITheme.rgba(0.137, 0.145, 0.18, if self.rail then 0.0 else 0.035)
+	local border: any = UITheme.rgba(0.137, 0.145, 0.18, if self.rail then 0.0 else 0.07)
 	if arsenal_locked then
 		bg = UITheme.c(UITheme.GOLD, 0.05)
 		border = UITheme.c(UITheme.GOLD, 0.28)
@@ -353,11 +373,11 @@ function BuildButton._redraw(self)
 		border = UITheme.c(UITheme.RED, 0.22)
 	end
 	if self._hover then
-		bg = if not nuke then UITheme.rgba(1, 1, 1, 0.1) else UITheme.c(UITheme.RED, 0.16)
+		bg = if not nuke then UITheme.rgba(0.137, 0.145, 0.18, 0.1) else UITheme.c(UITheme.RED, 0.16)
 		border = UITheme.LINE_2
 	end
 	if self.button_pressed or (self._hover and self._down) then
-		bg = UITheme.rgba(1, 1, 1, 0.05)
+		bg = UITheme.rgba(0.137, 0.145, 0.18, 0.05)
 	end
 	if self.active then
 		bg = UITheme.c(UITheme.AMBER, 0.2)
@@ -367,34 +387,32 @@ function BuildButton._redraw(self)
 		bg = UITheme.lerp(bg, UITheme.c(UITheme.RED, 0.35), self._flash)
 		border = UITheme.lerp(border, UITheme.RED, self._flash)
 	end
-	self._sv:set(UITheme.flat(bg, UITheme.R_MD, border, 1))
+	self._sv:set(UITheme.flat(bg, UITheme.R_SM, border, 1))
 
-	local icol: any = UITheme.TEXT
-	if nuke then
-		icol = Color3.new(1.0, 0.86, 0.84)
-	end
-	if not ok then
-		icol = UITheme.c(icol, if arsenal_locked then 0.55 elseif locked then 0.2 else 0.5)
-	end
-	if self.active then
-		icol = UITheme.AMBER_HI
-	end
+	-- a colour-coded tile with a white glyph: what a slot is reads at a glance, and a slot you can't use yet fades
+	local icol: any = if ok or self.active then UITheme.WHITE else UITheme.c(UITheme.WHITE, 0.6)
+	local tile_col = UITheme.TILE[self.kind] or UITheme.TILE_DEFAULT
+	self._tile.BackgroundColor3 = tile_col
+	self:_part(self._tile, "BackgroundTransparency", if ok or self.active then 1.0 elseif arsenal_locked then 0.7 elseif locked then 0.55 else 0.75)
 	local cy = size.Y * (if size.Y < 50 then 0.4 else 0.42)
 	if self.show_name then
 		cy = 17.0
 	end
-	local ip = self.icon_px
+	local ip = if self.rail then 22.0 else self.icon_px
 	local sc = UITheme.scale
 	local g = self._glyph
 	UITheme.set_image(g, UITheme.icon(self.kind))
 	g.ImageColor3 = UITheme.color3(icol)
 	self:_part(g, "ImageTransparency", UITheme.alpha(icol))
 	local ipx = math.floor(ip * sc + 0.5)
+	local tpad = math.floor((if self.rail then 6 else 4) * sc + 0.5)
+	self._tile.Size = UDim2.fromOffset(ipx + tpad * 2, ipx + tpad * 2)
 	g.Size = UDim2.fromOffset(ipx, ipx)
 	g.Position = UDim2.fromOffset(
-		math.floor((size.X * 0.5) * sc + 0.5) - math.floor(ipx / 2),
-		math.floor((cy - ip * 0.5) * sc + 0.5)
+		if self.rail then math.floor(8 * sc + 0.5) else math.floor((size.X * 0.5) * sc + 0.5) - math.floor(ipx / 2),
+		if self.rail then math.floor((size.Y - ip) * 0.5 * sc + 0.5) else math.floor((cy - ip * 0.5) * sc + 0.5)
 	)
+	self._tile.Position = g.Position - UDim2.fromOffset(tpad, tpad)
 
 	local fs = math.max(11, UITheme.min_font_size)
 	local c = self._av.cost or 0
@@ -404,6 +422,31 @@ function BuildButton._redraw(self)
 		ccol = UITheme.c(UITheme.TEXT_3, 0.8)
 	elseif not ok then
 		ccol = UITheme.c(UITheme.RED, 0.95)
+	end
+	if self.rail then
+		-- the icon, then the hotkey and the count (or a lock) in the column beside it
+		self._name.Visible = false
+		self._cost.Visible = false
+		local lk = self._lock
+		lk.Visible = arsenal_locked
+		if arsenal_locked then
+			local lpx = math.floor(11 * sc + 0.5)
+			UITheme.set_image(lk, UITheme.icon("lock"))
+			lk.ImageColor3 = UITheme.color3(UITheme.GOLD)
+			lk.Size = UDim2.fromOffset(lpx, lpx)
+			lk.Position = UDim2.fromOffset(math.floor((size.X - 3.0) * sc + 0.5) - lpx, math.floor((size.Y - 4.0) * sc + 0.5) - lpx)
+		end
+		if not self.ctx.touch and self.hotkey ~= "" then
+			place_text(self, self._hk, 0, 13.0, size.X - 3.0, Enum.TextXAlignment.Right, 9, 600, self.hotkey, UITheme.c(UITheme.TEXT_3, 0.9))
+		else
+			self._hk.Visible = false
+		end
+		if self._owned > 0 and not nuke then
+			place_text(self, self._own, 0, size.Y - 5.0, size.X - 3.0, Enum.TextXAlignment.Right, 10, 600, "×" .. tostring(self._owned), UITheme.c(UITheme.TEXT_2, 0.9))
+		else
+			self._own.Visible = false
+		end
+		return
 	end
 	-- a locked Arsenal kind: a gold lock where the cost would be
 	local lock = self._lock

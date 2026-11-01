@@ -59,6 +59,62 @@ for _, r in Cosmetics.RARITIES do
 end
 expect(math.abs(sum - 1) < 1e-9, "published odds sum to 100%")
 
+-- each item's own odds, as the Details list shows them
+local function item_sum(owned: any): (number, number)
+	local total, n = 0, 0
+	for _, e in Cosmetics.item_odds(owned) do
+		total += e.odds
+		n += 1
+		if owned[e.item.id] then
+			total = -1000
+		end
+	end
+	return total, n
+end
+local total0, n0 = item_sum({})
+expect(math.abs(total0 - 1) < 1e-9 and n0 == #Cosmetics.all(), "every item is listed, and the list sums to 100%")
+local no_legendary = {}
+for _, it in Cosmetics.all() do
+	if it.rarity == "legendary" then
+		no_legendary[it.id] = true
+	end
+end
+local total1 = item_sum(no_legendary)
+expect(math.abs(total1 - 1) < 1e-9, "with a rarity all owned the rest still sums to 100%, none of it owned")
+local shares = {}
+for _, e in Cosmetics.item_odds({}) do
+	shares[e.rarity.id] = (shares[e.rarity.id] or 0) + e.odds
+end
+expect(math.abs(shares.common - 0.62) < 1e-9 and math.abs(shares.legendary - 0.03) < 1e-9, "items share their rarity's odds")
+-- what the list says is what a roll does (one rare item: its share of many rolls)
+local counts, rolls = {}, 40000
+math.randomseed(7)
+for _ = 1, rolls do
+	local id = Cosmetics.roll({}, math.random(), math.random())
+	counts[id] = (counts[id] or 0) + 1
+end
+local listed_ok = true
+for _, e in Cosmetics.item_odds({}) do
+	if e.rarity.id == "common" and math.abs((counts[e.item.id] or 0) / rolls - e.odds) > 0.012 then
+		listed_ok = false
+	end
+end
+expect(listed_ok, "rolls land on each item at its listed odds")
+-- the text: exact stays short, rounded keeps four places below the first non-zero digit
+local function text(p: number): (string, boolean)
+	return Cosmetics.odds_text(p)
+end
+local t62, r62 = text(0.62)
+expect(t62 == "62%" and not r62, "62% stays exact: " .. t62)
+local t125, r125 = text(0.125)
+expect(t125 == "12.5%" and not r125, "12.5% stays exact: " .. t125)
+local t1, r1 = text(62 / 97)
+expect(t1 == "63.9175%" and r1, "a long decimal rounds to 4 places: " .. t1)
+local t2, r2 = text(0.0012345678)
+expect(t2 == "0.12346%" and r2, "under 1%: four places below the first digit: " .. t2)
+local t3, r3 = text(0.000012345678)
+expect(t3 == "0.0012346%" and r3, "far under 1%: the same rule: " .. t3)
+
 -- the player's odds: rarities with nothing left drop out
 local owned = {}
 for _, it in Cosmetics.all() do

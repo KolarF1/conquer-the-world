@@ -1,21 +1,32 @@
 --!native
--- Landmarks on the map (Core/SimLandmarks): a small badge at each site, tinted with the colour of
--- whoever holds the ground under it (grey while nobody does), so players can see what a war is for.
+-- Landmarks on the map (Core/SimLandmarks): a small diamond at each site with the kind's icon, tinted with the colour
+-- of whoever holds the ground under it (grey while nobody does), so players can see what a war is for.
 -- The sites come from the map alone (SimLandmarks.sites), the same on every client and the server,
 -- so nothing about them travels over the wire; the holder is read from the mirrored owner grid.
 local RS = game:GetService("ReplicatedStorage")
 local Airfront = RS:WaitForChild("Airfront")
 local Core = Airfront:WaitForChild("Core")
 local SimLandmarks = require(Core:WaitForChild("SimLandmarks")) :: any
+local ArtAtlas = require((script :: any).Parent.Parent:WaitForChild("UI"):WaitForChild("ArtAtlas")) :: any
 
 local LandmarkLayer = {}
 LandmarkLayer.__index = LandmarkLayer
 
 LandmarkLayer.POLL_S = 0.5
 LandmarkLayer.Z = 22
-LandmarkLayer.SIZE = 26
-LandmarkLayer.GLYPH = SimLandmarks.KIND_GLYPHS
-LandmarkLayer.NEUTRAL = Color3.fromRGB(0xb8, 0xbd, 0xc7)
+LandmarkLayer.SIZE = 34
+LandmarkLayer.ICONS = SimLandmarks.KIND_ICONS
+--- Each kind's colour, Gold Mine to Foundry. It says what the landmark is; the ring says who holds it.
+LandmarkLayer.COLORS = {
+	Color3.fromRGB(222, 164, 20),
+	Color3.fromRGB(190, 62, 46),
+	Color3.fromRGB(84, 96, 114),
+	Color3.fromRGB(32, 118, 186),
+	Color3.fromRGB(116, 150, 40),
+	Color3.fromRGB(206, 106, 24),
+}
+LandmarkLayer.CROWN = Color3.fromRGB(240, 186, 40)
+LandmarkLayer.NEUTRAL = Color3.fromRGB(252, 246, 232)
 
 function LandmarkLayer.new(parent: Instance, view: any)
 	local self = setmetatable({}, LandmarkLayer) :: any
@@ -34,28 +45,42 @@ function LandmarkLayer.new(parent: Instance, view: any)
 	return self
 end
 
-local function make_badge(root: Instance, kind: number): any
-	local b = Instance.new("TextLabel")
-	b.Name = SimLandmarks.KIND_NAMES[kind]
+local function make_badge(root: Instance, kind: number, icon: string): any
+	local b = Instance.new("Frame")
+	b.Name = SimLandmarks.KIND_NAMES[kind] or "Crown"
 	b.AnchorPoint = Vector2.new(0.5, 0.5)
 	b.Size = UDim2.fromOffset(LandmarkLayer.SIZE, LandmarkLayer.SIZE)
-	b.BackgroundColor3 = Color3.fromRGB(0x14, 0x18, 0x22)
-	b.BackgroundTransparency = 0.15
-	b.Text = LandmarkLayer.GLYPH[kind]
-	b.TextSize = 18
-	b.Font = Enum.Font.GothamBlack
-	b.TextColor3 = LandmarkLayer.NEUTRAL
+	b.BackgroundTransparency = 1
 	b.Visible = false
 	b.ZIndex = LandmarkLayer.Z
+	local d = Instance.new("Frame")
+	d.Name = "Diamond"
+	d.AnchorPoint = Vector2.new(0.5, 0.5)
+	d.Position = UDim2.fromScale(0.5, 0.5)
+	d.Size = UDim2.fromScale(0.86, 0.86)
+	d.BackgroundColor3 = LandmarkLayer.COLORS[kind] or LandmarkLayer.CROWN
+	d.BorderSizePixel = 0
+	d.ZIndex = LandmarkLayer.Z
 	local corner = Instance.new("UICorner")
 	corner.CornerRadius = UDim.new(1, 0)
-	corner.Parent = b
+	corner.Parent = d
 	local stroke = Instance.new("UIStroke")
-	stroke.Thickness = 2
+	stroke.Thickness = 2.5
 	stroke.Color = LandmarkLayer.NEUTRAL
-	stroke.Parent = b
+	stroke.Parent = d
+	d.Parent = b
+	local g = Instance.new("ImageLabel")
+	g.Name = "Icon"
+	g.AnchorPoint = Vector2.new(0.5, 0.5)
+	g.Position = UDim2.fromScale(0.5, 0.5)
+	g.Size = UDim2.fromScale(0.58, 0.58)
+	g.BackgroundTransparency = 1
+	g.ImageColor3 = Color3.new(1, 1, 1)
+	g.ZIndex = LandmarkLayer.Z + 1
+	ArtAtlas.apply(g, ArtAtlas.icon(icon))
+	g.Parent = b
 	b.Parent = root
-	return { frame = b, stroke = stroke, held_by = -1, x = -1, y = -1, vis = false }
+	return { frame = b, stroke = stroke, icon = g, held_by = -1, x = -1, y = -1, vis = false }
 end
 
 function LandmarkLayer.bind(self: any, state: any)
@@ -67,16 +92,13 @@ function LandmarkLayer.bind(self: any, state: any)
 	table.clear(self._badges)
 	self._sites = SimLandmarks.sites(state.map)
 	for i, s in self._sites do
-		self._badges[i] = make_badge(self.root, s.kind)
+		self._badges[i] = make_badge(self.root, s.kind, LandmarkLayer.ICONS[s.kind])
 	end
 	-- King of the Hill: the Crown's badge, bigger than the rest
 	if state.crown ~= nil then
 		local kind = #self._sites + 1
 		table.insert(self._sites, { tile = state.crown[1], kind = 0 })
-		local b = make_badge(self.root, 1)
-		b.frame.Name = "Crown"
-		b.frame.Text = "W"
-		b.frame.TextSize = 24
+		local b = make_badge(self.root, 0, "crown")
 		b.crown = true
 		self._badges[kind] = b
 	end
@@ -103,7 +125,6 @@ function LandmarkLayer._refresh_holders(self: any)
 		if id ~= b.held_by then
 			b.held_by = id
 			local col = if id > 0 then st:owner_color(id) else LandmarkLayer.NEUTRAL
-			b.frame.TextColor3 = col
 			b.stroke.Color = col
 		end
 	end

@@ -52,9 +52,9 @@ local WHITE = Color3.new(1, 1, 1)
 local MUTED = Color3.fromRGB(168, 182, 214)
 local NIGHT = Color3.fromRGB(6, 18, 20)
 local ROBUX = "rbxasset://textures/ui/common/robux@3x.png"
-local FONT_H = Font.new("rbxasset://fonts/families/Montserrat.json", Enum.FontWeight.Heavy)
-local FONT_B = Font.new("rbxasset://fonts/families/Montserrat.json", Enum.FontWeight.Bold)
-local FONT_M = Font.new("rbxasset://fonts/families/Montserrat.json", Enum.FontWeight.Medium)
+local FONT_H = Font.new("rbxasset://fonts/families/BuilderSans.json", Enum.FontWeight.ExtraBold)
+local FONT_B = Font.new("rbxasset://fonts/families/BuilderSans.json", Enum.FontWeight.Bold)
+local FONT_M = Font.new("rbxasset://fonts/families/BuilderSans.json", Enum.FontWeight.Medium)
 
 local function new(class: string, props: { [string]: any }, parent: Instance?): any
 	local i = Instance.new(class)
@@ -164,7 +164,7 @@ function StarterOffer._build(self)
 		Name = "StarterWindow",
 		Active = true, -- (a press on the window doesn't reach the dim)
 		AnchorPoint = Vector2.new(0.5, 0.5),
-		BackgroundColor3 = Color3.fromRGB(13, 31, 34),
+		BackgroundColor3 = Color3.fromRGB(22, 24, 52),
 		BorderSizePixel = 0,
 		Size = UDim2.fromOffset(D.X, D.Y),
 		ZIndex = 61,
@@ -435,8 +435,8 @@ function StarterOffer._build(self)
 		AutoButtonColor = false,
 		BackgroundTransparency = 1,
 		AnchorPoint = Vector2.new(0.5, 0.5),
-		Position = UDim2.fromOffset(x0 + 98, 316),
-		Size = UDim2.fromOffset(196, 28),
+		Position = UDim2.fromOffset(x0 + 98, 322),
+		Size = UDim2.fromOffset(196, 46),
 		ZIndex = 65,
 	}, win)
 	later.Activated:Connect(function()

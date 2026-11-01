@@ -152,7 +152,7 @@ function DoctrineDraft.new(c: any, ui: any)
 		table.insert(plated, chip)
 	end
 	for _, chip in plated do
-		local plate = T.flat(T.rgba(0.03, 0.06, 0.08, 0.94), 10, T.LINE_2, 1, 12.0, 4.0)
+		local plate = T.flat(T.GLASS, 10, T.LINE_2, 1, 12.0, 4.0)
 		chip:add_theme_stylebox_override("normal", plate)
 		chip:add_theme_stylebox_override("hover", T.flat(T.rgba(0.06, 0.11, 0.13, 0.96), 10, T.c(T.AMBER, 0.6), 1, 12.0, 4.0))
 		chip:add_theme_stylebox_override("pressed", plate)

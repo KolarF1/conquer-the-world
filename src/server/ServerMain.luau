@@ -1298,6 +1298,9 @@ function ServerMain.start()
 	-- Paid random items (the cosmetic crates) are not offered where Roblox's policy restricts them
 	-- (PolicyService.ArePaidRandomItemsRestricted); unknown until checked = restricted.
 	local crates_allowed: { [Player]: boolean } = {}
+	Purchases.crates_allowed = function(player: any): boolean
+		return crates_allowed[player] == true
+	end
 	--- the policy was asked (an answer or not): RoWorld General's daily perk waits for it
 	local policy_known: { [Player]: boolean } = {}
 	inventory_of = function(player: Player): any

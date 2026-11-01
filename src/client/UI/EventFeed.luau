@@ -102,7 +102,7 @@ function EventFeed.apply_layout(self, bottom_y: number)
 		return
 	end
 	st:set_alignment(W.ALIGN_END)
-	local left = if not ctx.compact then 16.0 + ctx.insets.x else 8.0 + ctx.insets.x
+	local left = if not ctx.compact then math.max(16.0 + ctx.insets.x, (ctx.rail_w or 0.0) + 10.0) else 8.0 + ctx.insets.x
 	local w = if not ctx.compact then 340.0 else 290.0
 	st.anchor_left, st.anchor_right, st.anchor_top, st.anchor_bottom = 0.0, 0.0, 1.0, 1.0
 	st.grow_vertical = W.GROW_BEGIN

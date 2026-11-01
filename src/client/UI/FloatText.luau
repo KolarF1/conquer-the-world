@@ -28,7 +28,7 @@ function FloatText.spawn(parent: any, pos: Vector2, text: string, icon_name: str
 	pill:set_mouse_filter(W.MOUSE_IGNORE)
 	pill:add_theme_stylebox_override(
 		"panel",
-		UITheme.flat(UITheme.rgba(0.026, 0.05, 0.06, 0.92), 999, UITheme.c(col, 0.55), 1, 12.0, 5.0)
+		UITheme.flat(UITheme.GLASS, 999, UITheme.c(col, 0.55), 1, 12.0, 5.0)
 	)
 	local row = UITheme.hbox(7)
 	if icon_name ~= nil and icon_name ~= "" then

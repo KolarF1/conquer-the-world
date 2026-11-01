@@ -1,6 +1,6 @@
 --!nonstrict
 -- Port of scripts/ui/glass_panel.gd (UIGlass)
--- Panel ("plate"): ink-teal tint, 1 px teal hairline and a soft drop shadow (a top sheen on request).
+-- Panel ("plate"): indigo tint, 1 px periwinkle hairline and a soft drop shadow (a top sheen on request).
 -- Lays out its children like a PanelContainer (inside the padding).
 --
 -- Roblox has no backdrop blur, so the glass is drawn as the GDScript no-frost path does (a flat
@@ -154,6 +154,8 @@ function GlassPanel.restyle(self)
 	if self._frost and a < 0.97 then
 		a = math.clamp(a + UITheme.GLASS_BOOST, 0, 0.97)
 	end
+	-- (Roblox's transparency setting scales how see-through the panel is)
+	a = 1 - (1 - a) * UITheme.preferred_transparency
 	self._bg.BackgroundColor3 = t.color
 	self:_part(self._bg, "BackgroundTransparency", a)
 	self:set_border(self.border_color)

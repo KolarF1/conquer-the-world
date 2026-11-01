@@ -53,8 +53,8 @@ Locker.PREVIEW_COLOR = Color3.fromRGB(64, 132, 230)
 Locker.PREVIEW_TILES = 24
 Locker.CREDIT_WAIT_S = 30
 
-local FONT = Font.new("rbxasset://fonts/families/Montserrat.json", Enum.FontWeight.Bold)
-local FONT_M = Font.new("rbxasset://fonts/families/Montserrat.json", Enum.FontWeight.Medium)
+local FONT = Font.new("rbxasset://fonts/families/BuilderSans.json", Enum.FontWeight.Bold)
+local FONT_M = Font.new("rbxasset://fonts/families/BuilderSans.json", Enum.FontWeight.Medium)
 
 local function c3(hex: number): Color3
 	return Color3.fromRGB((hex // 65536) % 256, (hex // 256) % 256, hex % 256)
@@ -187,7 +187,7 @@ function Locker.new(c: any)
 	end)
 	self:add_child(self._dim)
 	self._panel = GlassPanel.new(22.0, 20.0, 18, true, 34)
-	self._panel:set_tint(UITheme.rgba(0.036, 0.066, 0.075, 0.96))
+	self._panel:set_tint(UITheme.GLASS_SOLID)
 	self:add_child(self._panel)
 	local v = UITheme.vbox(12)
 	self._v = v
@@ -360,6 +360,16 @@ function Locker._build_crate(self, parent: any)
 		odds:add_child(row)
 	end
 	v:add_child(odds)
+	-- every item's own odds (the rows above are per rarity: the policy wants each outcome, and a word on
+	-- the control)
+	self._details = UITheme.button("DETAILS", "GlassButton", "", 32.0)
+	self._details:set_font_size(12)
+	self._details.pressed:Connect(function()
+		if self.odds_view ~= nil then
+			self.odds_view:open(self:_inv().owned)
+		end
+	end)
+	v:add_child(self._details)
 	self._buy = UITheme.button("49", "PrimaryButton", "robux", 48.0)
 	self._buy:set_min_size(Vector2.new(Locker.CRATE_W - 32, 48))
 	self._buy.pressed:Connect(function()
@@ -443,7 +453,7 @@ function Locker._refresh_crate(self)
 	for _, e in Cosmetics.odds(inv.owned) do
 		local l = self._odds[e.rarity.id]
 		if l then
-			l:set_text(if e.left > 0 then string.format("%.0f%%", e.odds * 100) else "all owned")
+			l:set_text(if e.left > 0 then (Cosmetics.odds_text(e.odds)) else "all owned")
 		end
 	end
 	local all_owned = owned >= total
@@ -453,6 +463,7 @@ function Locker._refresh_crate(self)
 	local allowed = inv.crates_allowed == true
 	self._buy:set_visible(allowed and not all_owned)
 	self._odds_box:set_visible(allowed and not all_owned)
+	self._details:set_visible(allowed and not all_owned)
 	self._buy:set_disabled(busy)
 	local packs = allowed and not busy and waiting <= 0
 	local save = if packs then self:_pack_saving(total - owned, "crate3") else nil
@@ -574,6 +585,11 @@ function Locker.set_opening(self, o: any)
 	o.info_of = function()
 		return self:_offer()
 	end
+	o.details:Connect(function()
+		if self.odds_view ~= nil then
+			self.odds_view:open(self:_inv().owned)
+		end
+	end)
 	o.wear:Connect(function(id: string)
 		local it = Cosmetics.item(id)
 		local se = self.ctx.session
@@ -665,6 +681,7 @@ function Locker._on_result(self, ok: boolean, res: string)
 		o:fail(
 			if res == "everything owned"
 				then "You own every skin and flag already."
+				elseif res == "not allowed" then "Crates aren't available in your country. Your crate stays saved."
 				else "Couldn't open the crate right now. It's saved: try again."
 		)
 	end

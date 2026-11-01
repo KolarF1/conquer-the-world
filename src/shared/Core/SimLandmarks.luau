@@ -20,9 +20,11 @@ SimLandmarks.KIND_CITADEL = 3
 SimLandmarks.KIND_HARBOR = 4
 SimLandmarks.KIND_GRANARY = 5
 SimLandmarks.KIND_FOUNDRY = 6
-SimLandmarks.KIND_NAMES = { "Mint", "Garrison", "Citadel", "Harbor", "Granary", "Foundry" }
+SimLandmarks.KIND_NAMES = { "Gold Mine", "Garrison", "Citadel", "Harbor", "Granary", "Foundry" }
 --- The badge's mark on the map and what holding one does, per kind.
 SimLandmarks.KIND_GLYPHS = { "$", "+", "#", "~", "%", "^" }
+--- The icon and tile colour of each kind on the map.
+SimLandmarks.KIND_ICONS = { "lm_mine", "lm_garrison", "lm_citadel", "lm_harbor", "wheat", "lm_foundry" }
 SimLandmarks.KIND_LINES = { "+20% gold", "+8% troop cap", "+8% defence", "+25% trade gold", "+15% troop regrowth", "+5% building refund" }
 SimLandmarks.MINT_GOLD_BONUS = 0.20
 SimLandmarks.GARRISON_CAP_BONUS = 0.08

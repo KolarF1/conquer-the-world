@@ -71,10 +71,10 @@ function Tutorial.new(c: any, ui: any)
 	self._ring_b = UICtx.ring(self._mark, Vector2.zero, 10, 2, UITheme.AMBER, 1)
 	self._dot = UICtx.circle(self._mark, Vector2.zero, 6, UITheme.AMBER, 0)
 	self._tap = UICtx.make("TextLabel", {
-		BackgroundColor3 = Color3.fromRGB(11, 28, 30),
+		BackgroundColor3 = Color3.fromRGB(22, 24, 52),
 		BackgroundTransparency = 0.15,
 		Text = "Tap here",
-		FontFace = Font.new("rbxasset://fonts/families/Montserrat.json", Enum.FontWeight.Bold),
+		FontFace = Font.new("rbxasset://fonts/families/BuilderSans.json", Enum.FontWeight.Bold),
 		TextSize = 13,
 		TextColor3 = Color3.new(1, 1, 1),
 		AutomaticSize = Enum.AutomaticSize.XY,

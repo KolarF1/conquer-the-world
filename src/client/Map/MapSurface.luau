@@ -194,9 +194,9 @@ end
 -- isobath rings; paper-toned land shaded as relief (light from the north-west); an inked coast. The
 -- upstream's was flat pastel (ocean #4785b5, plains #BEDC8A, ...). terrain_pixel is the per-byte base
 -- colour; build_terrain adds what needs the neighbours (relief, rings, coast ink) once per map.
-local SEA_SHALLOW = { 0x2E, 0x74, 0x82 }
-local SEA_DEEP = { 0x0A, 0x22, 0x33 }
-local SEA_HALO = { 0x86, 0xBE, 0xBB }
+local SEA_SHALLOW = { 0x4F, 0x9F, 0xB4 }
+local SEA_DEEP = { 0x17, 0x4C, 0x70 }
+local SEA_HALO = { 0xA8, 0xD8, 0xD4 }
 local SAND = { 0xCF, 0xC4, 0x98 }
 local PLAINS = { 0xB9, 0xBD, 0x8C } -- darkens a little inland
 local HIGHLAND = { 0xB2, 0xA0, 0x76 }

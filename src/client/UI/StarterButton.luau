@@ -36,7 +36,7 @@ local WHITE = Color3.new(1, 1, 1)
 local PINK = Color3.fromRGB(255, 186, 186)
 local RED = Color3.fromRGB(232, 46, 56)
 local ROBUX = "rbxasset://textures/ui/common/robux@3x.png"
-local FONT_H = Font.new("rbxasset://fonts/families/Montserrat.json", Enum.FontWeight.Heavy)
+local FONT_H = Font.new("rbxasset://fonts/families/BuilderSans.json", Enum.FontWeight.ExtraBold)
 
 local function new(class: string, props: { [string]: any }, parent: Instance?): any
 	local i = Instance.new(class)

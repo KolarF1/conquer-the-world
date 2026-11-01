@@ -535,7 +535,7 @@ function UICtx.pop_in(node: any, delay: number?, from_scale: number?, dur: numbe
 	local d = delay or 0.0
 	local du = dur or 0.4
 	local rise = (1.0 - (from_scale or 0.96)) * 100.0
-	if fade_only or node.parent == nil or node.parent._is_container then
+	if fade_only or node.parent == nil or node.parent._is_container or UICtx.mod("UITheme").reduced_motion then
 		node:set_modulate_a(0.0)
 		local t = node:create_tween()
 		if d > 0 then

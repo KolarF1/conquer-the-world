@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
-"""Montserrat metrics for the UI kit's text layout (replaces the Rubik tables of tools/uikit/make_metrics.py).
+"""Builder Sans metrics for the UI kit's text layout (replaces the Rubik tables of tools/uikit/make_metrics.py).
 
-Reads Montserrat-{Regular,Medium,Bold,Black}.ttf from Roblox Studio's content/fonts (weights 400, 500, 700, 900;
+Reads BuilderSans-{Regular,Medium,Bold,ExtraBold}.otf from Roblox Studio's content/fonts (weights 400, 500, 700, 900;
 600 and 800 are interpolated), writes into src/client/UI/UITheme.luau: the GENERATED METRICS block (advances per
 weight in em/1000 and the tabular digit), APPROX (rough per-class advances for Lune), and the line constants
 (hhea ascender/descender). Usage: python tools/art/make_font_metrics.py [fonts dir]
@@ -15,8 +15,8 @@ if len(sys.argv) > 1:
     fonts = sys.argv[1]
 else:
     cands = sorted(glob.glob(os.path.expanduser("~/AppData/Local/Roblox/Versions/version-*/content/fonts")))
-    fonts = next(c for c in cands if os.path.exists(os.path.join(c, "Montserrat-Regular.ttf")))
-FILES = {400: "Montserrat-Regular.ttf", 500: "Montserrat-Medium.ttf", 700: "Montserrat-Bold.ttf", 900: "Montserrat-Black.ttf"}
+    fonts = next(c for c in cands if os.path.exists(os.path.join(c, "BuilderSans-Regular.otf")))
+FILES = {400: "BuilderSans-Regular.otf", 500: "BuilderSans-Medium.otf", 700: "BuilderSans-Bold.otf", 800: "BuilderSans-ExtraBold.otf"}
 EXTRA = "·×…−±✓’“”—–•"
 chars = [chr(c) for c in range(32, 127)] + list(EXTRA)
 
@@ -40,12 +40,13 @@ for w, fn in FILES.items():
                             subs.update(st.mapping)
     g0 = cmap[ord("0")]
     tnum[w] = round(hm[subs.get(g0, g0)][0] * scale)
-for w, a, b in ((600, 500, 700), (800, 700, 900)):
-    adv[w] = {cp: round((adv[a][cp] + adv[b][cp]) / 2) for cp in adv[a]}
-    tnum[w] = round((tnum[a] + tnum[b]) / 2)
+adv[600] = {cp: round((adv[500][cp] + adv[700][cp]) / 2) for cp in adv[500]}
+tnum[600] = round((tnum[500] + tnum[700]) / 2)
+# (the family stops at 800: a request for 900 gets the 800 face)
+adv[900], tnum[900] = adv[800], tnum[800]
 
 lines = ["-- BEGIN GENERATED METRICS (tools/art/make_font_metrics.py) --",
-         "-- Montserrat advances in em/1000: ADV[weight] = {codepoint -> advance}; TNUM[weight] = tabular digit.",
+         "-- Builder Sans advances in em/1000: ADV[weight] = {codepoint -> advance}; TNUM[weight] = tabular digit.",
          "local ADV: { [number]: { [number]: number } } = {}",
          "local TNUM: { [number]: number } = {}"]
 for w in (400, 500, 600, 700, 800, 900):
@@ -69,7 +70,7 @@ line_em = (asc + desc) / upm
 src = open(THEME, encoding="utf-8").read()
 src = re.sub(r"-- BEGIN GENERATED METRICS.*?-- END GENERATED METRICS --", lambda m: block, src, flags=re.S)
 src = re.sub(r"local APPROX = \{.*?\n\}", lambda m: "\n".join(approx), src, count=1, flags=re.S)
-src = re.sub(r"--- Line height of [A-Za-z]+ in em[^\n]*\nUITheme\.LINE_EM = [0-9.]+", f"--- Line height of Montserrat in em (hhea ascender {asc} + descender {desc}, per {upm}).\nUITheme.LINE_EM = {line_em:.3f}", src)
+src = re.sub(r"--- Line height of [A-Za-z]+ in em[^\n]*\nUITheme\.LINE_EM = [0-9.]+", f"--- Line height of BuilderSans in em (hhea ascender {asc} + descender {desc}, per {upm}).\nUITheme.LINE_EM = {line_em:.3f}", src)
 src = re.sub(r"UITheme\.ASCENT_EM = [0-9.]+", f"UITheme.ASCENT_EM = {asc / upm:.3f}", src)
 ratio = tnum[700] / adv[700][ord("0")]
 src = re.sub(r"UITheme\.TNUM_RATIO = [0-9.]+", f"UITheme.TNUM_RATIO = {ratio:.3f}", src)

@@ -52,7 +52,7 @@ function GradientText.new(text: string, px: number, weight: number?)
 	self.weight = weight or 900
 	self.spacing = 0
 	self.top_color = Color3.new(1, 1, 1)
-	self.bottom_color = Color3.new(0.62, 0.95, 0.9)
+	self.bottom_color = Color3.fromRGB(182, 195, 255)
 	self.y0 = 0.0 -- gradient start (logical px from the top of the line)
 	self.span = 100.0
 	self.sweep = -10000.0 -- shine centre x (logical px), off by default
@@ -503,7 +503,7 @@ function TitleScreen._build_head(self)
 	local word = GradientText.new("CONQUER", 120, 900)
 	word.spacing = 14
 	word.shadow = { color = Color3.new(0.0, 0.02, 0.08), alpha = 0.55, offset_y = 6, outline = 14 }
-	word:set_colors(Color3.new(1, 1, 1), Color3.new(0.36, 0.9, 0.82)) -- (the wordmark is white into our teal)
+	word:set_colors(Color3.new(1, 1, 1), Color3.fromRGB(148, 166, 255)) -- (the wordmark is white into our teal)
 	word.size_flags_horizontal = W.SHRINK_CENTER
 	self._word = word
 	self._head:add_child(word)
@@ -810,6 +810,9 @@ end
 -- Layout & state
 -- ---------------------------------------------------------------------------------------------
 
+--- The desktop column's width (the word and the dock).
+TitleScreen.COLUMN_W = 560.0
+
 function TitleScreen.apply_layout(self)
 	local ctx = self.ctx
 	local vp = ctx.vp
@@ -857,14 +860,25 @@ function TitleScreen.apply_layout(self)
 			self:_size_word(word_px)
 		end
 	end
+	-- Ours: on a desktop the word and the dock stand in one column on the left, the map has the rest.
+	local column = not compact and vp.X >= 1100.0 and vp.Y >= 640.0
+	if column then
+		col_x = 24.0 + ctx.insets.x + TitleScreen.COLUMN_W * 0.5
+		local w = self._word:get_combined_minimum_size().X
+		word_px = word_px * TitleScreen.COLUMN_W / math.max(w, 1.0)
+		self:_size_word(word_px)
+	end
 	local dx = col_x - vp.X * 0.5
-	local emblem_px = if compact then 0.0 else math.clamp(word_px * 0.56, 44.0, 76.0)
+	local emblem_px = if compact or column then 0.0 else math.clamp(word_px * 0.56, 44.0, 76.0)
 	self._emblem:set_visible(emblem_px > 0.0)
 	self._emblem:set_min_size(Vector2.new(emblem_px, emblem_px))
 	self._tag:set_font_size(if compact then 11 else 15)
 	self._tag_l:set_min_size(Vector2.new(if compact then 40 else 72, 2))
 	self._tag_r:set_min_size(self._tag_l.custom_minimum_size)
 	local head_top = (if compact then 56.0 else math.max(vp.Y * 0.07, 40.0)) + ctx.insets.y
+	if column then
+		head_top = math.max(head_top, ctx.reserved_top_left.Max.Y + 10.0)
+	end
 	if compact then
 		-- Phones: keep the wordmark centred, below the top bar row when they would touch.
 		local ww = self._word:get_combined_minimum_size().X

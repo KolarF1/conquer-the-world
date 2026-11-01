@@ -34,7 +34,7 @@ CrateButton.WAITING_WIGGLE_S = 1.2
 
 local GOLD = Color3.fromRGB(255, 190, 72)
 local GOLD_LIGHT = Color3.fromRGB(255, 226, 150)
-local FONT_B = Font.new("rbxasset://fonts/families/Montserrat.json", Enum.FontWeight.Heavy)
+local FONT_B = Font.new("rbxasset://fonts/families/BuilderSans.json", Enum.FontWeight.ExtraBold)
 
 local function new(class: string, props: { [string]: any }, parent: Instance?): any
 	local i = Instance.new(class)

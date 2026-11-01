@@ -74,14 +74,14 @@ local function build()
 	-- (the two-row variants the layers used while the one-image atlas had not loaded are the one image here: ours is
 	-- ready at once, and a second copy would be EditableImage memory spent for nothing)
 	MapArt.shapes = { id = MapArt.shapes_one.id, cell = 112, cols = kinds }
-	MapArt.units_one = { id = upload(one_image(urm, ubm, ub.w, ub.h, 120), ub.w, ub.h), cell = 13, cols = #Data.unit_names }
-	MapArt.units = { id = MapArt.units_one.id, cell = 13, cols = #Data.unit_names }
+	MapArt.units_one = { id = upload(one_image(urm, ubm, ub.w, ub.h, 70), ub.w, ub.h), cell = ub.h, cols = #Data.unit_names }
+	MapArt.units = { id = MapArt.units_one.id, cell = ub.h, cols = #Data.unit_names }
 	local cm = Pack.mask(IconData.icons.crown, IconData.size, IconData.size)
 	MapArt.status = { id = upload(white(cm, IconData.size, IconData.size), IconData.size, IconData.size), cell = 64, cols = 1, pad = 0 }
 	--- per structure kind (index kind + 1): the plate's size (x StructureLayer.ICON_SIZE) and the share of it
 	--- the glyph spans
-	MapArt.shape_scale = { 1, 1, 1.12, 1.1, 1.15, 1.3, 1.2, 1.35, 1.25 }
-	MapArt.icon_fill = { 0.78, 0.74, 0.74, 0.74, 0.8, 0.76, 0.82, 0.8, 0.86 }
+	MapArt.shape_scale = { 1, 1, 1, 1, 1, 1, 1, 1, 1 }
+	MapArt.icon_fill = { 0.62, 0.62, 0.62, 0.62, 0.62, 0.62, 0.62, 0.62, 0.62 }
 end
 
 --- Puts `ref` (an ArtRef, or a legacy string) on `label` as its image; the layers set the rect themselves.

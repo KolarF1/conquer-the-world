@@ -58,7 +58,9 @@ local UnitLayer = {}
 UnitLayer.__index = UnitLayer
 
 UnitLayer.UNIT_SIZE = 13 -- full-size tiles
-UnitLayer.MIN_PX = 5
+UnitLayer.MIN_PX = 6
+--- However far in the camera is: a ship is a marker on the map, not a picture of a ship.
+UnitLayer.MAX_PX = 28
 UnitLayer.TRAIL_ALPHA = 0.588
 UnitLayer.TRAIL_STEP = 2.0 -- full-size tiles between a trail's points
 UnitLayer.TRAIL_WIDTH = 0.9 -- a nuke trail's width, map tiles
@@ -234,7 +236,6 @@ local function mask(parent: Instance, name: string, row: number, z: number): Ima
 	Sprites.set(l, Sprites.units.id)
 	l.ImageRectSize = Vector2.new(Sprites.units.cell, Sprites.units.cell)
 	l.ImageRectOffset = Vector2.new(0, row * Sprites.units.cell)
-	l.ResampleMode = Enum.ResamplerMode.Pixelated
 	l.Size = UDim2.fromScale(1, 1)
 	l.ZIndex = z
 	l.Parent = parent
@@ -452,7 +453,7 @@ function UnitLayer.tick(self: any, _dt: number)
 	local cam = self.view.rig
 	local rt = st.render_tick or st.tick or 0
 	local k = tonumber(st.map and st.map.k_lin) or Rules.K_LIN
-	local px = math.max(UnitLayer.MIN_PX, math.round(UnitLayer.UNIT_SIZE / k * cam.scale))
+	local px = math.clamp(math.round(UnitLayer.UNIT_SIZE / k * cam.scale), UnitLayer.MIN_PX, UnitLayer.MAX_PX)
 	-- a still camera over a crowded map: not every frame (see the header)
 	local still = cam.version == self._cam_seen and px == self._px_seen and (cam._shake or 0) <= 0.01
 	self._cam_seen, self._px_seen = cam.version, px
@@ -480,7 +481,7 @@ function UnitLayer.tick(self: any, _dt: number)
 	-- transport ships' wakes (under the sprites)
 	local map = st.map
 	local W0 = map.W or Defs.W
-	local wake_w = math.max(UnitLayer.TRAIL_MIN_PX, cam.scale / k)
+	local wake_w = math.clamp(cam.scale / k, UnitLayer.TRAIL_MIN_PX, 3) -- (zoomed in, a wake is still a thin line)
 	for uid, w in self._wakes do
 		local u = st.units[uid]
 		if u == nil or u.path ~= w.path then

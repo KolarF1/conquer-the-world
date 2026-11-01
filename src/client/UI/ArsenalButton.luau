@@ -18,7 +18,7 @@ ArsenalButton.PHONE_K = 0.6
 
 local GOLD = Color3.fromRGB(255, 200, 61)
 local GOLD_LIGHT = Color3.fromRGB(255, 232, 160)
-local FONT_B = Font.new("rbxasset://fonts/families/Montserrat.json", Enum.FontWeight.Heavy)
+local FONT_B = Font.new("rbxasset://fonts/families/BuilderSans.json", Enum.FontWeight.ExtraBold)
 
 local function new(class: string, props: { [string]: any }, parent: Instance?): any
 	local i = Instance.new(class)
@@ -133,7 +133,7 @@ function ArsenalButton._build(self)
 	-- the Stars badge (top right of the shield)
 	local badge = new("Frame", {
 		Name = "Stars",
-		BackgroundColor3 = Color3.fromRGB(16, 38, 41),
+		BackgroundColor3 = Color3.fromRGB(22, 26, 56),
 		AnchorPoint = Vector2.new(0.5, 0.5),
 		Visible = false,
 		ZIndex = 8,

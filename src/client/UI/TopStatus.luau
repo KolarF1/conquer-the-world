@@ -1,8 +1,9 @@
 --!nonstrict
 -- Port of scripts/ui/top_status.gd (UITopStatus)
--- Top-centre status pill: match clock (and time limit), phase, and world-control progress
--- towards the 80 % victory share for you and the current leader. Phones get a one-line mini pill
--- (clock · rank · share, a tiny Protected chip) whose tap opens the leaderboard.
+-- Top-centre status ribbon: match clock (and time limit), phase, your rank, and world-control progress
+-- towards the 80 % victory share for you and the current leader. Its tap opens the leaderboard, and the
+-- era's details are in a card over its name. Phones get a one-line mini pill (clock · rank · share, a
+-- tiny Protected chip).
 --
 -- Signals: tapped(). Members: panel, rank_provider (() -> number, set by UIRoot).
 -- Methods: apply_layout(), bottom_edge(), on_phase(phase, ticks_left), on_bind(), refresh(),
@@ -45,20 +46,17 @@ function TopStatus.new(c: any)
 	self._accum = 0.0
 	self:set_mouse_filter(W.MOUSE_IGNORE)
 	self:set_anchors_and_offsets_preset(W.PRESET_FULL_RECT)
-	self.panel = GlassPanel.new(18.0, 10.0, T.R_LG, true, 18)
+	self.panel = GlassPanel.new(16.0, 7.0, 14.0, true, 12)
 	self.panel:set_mouse_filter(W.MOUSE_IGNORE)
 	on_release(self.panel, function()
 		self.tapped:Fire()
 	end)
 	self:add_child(self.panel)
-	-- (desktop: two rows, the clock and control bar, and under them the Dominion strip, the match's arc)
-	local stack = T.vbox(8)
-	self._full = stack
-	self.panel:add_child(stack)
+	-- (desktop: one row along the top edge: the clock, the control bar, the match's arc)
 	local row = T.hbox(16)
-	stack:add_child(row)
+	self._full = row
+	self.panel:add_child(row)
 	self.dominion = DominionStrip.new(c)
-	stack:add_child(self.dominion.node)
 	--- (era): a new era began (UIRoot shows its banner)
 	self.era_changed = self.dominion.era_changed
 
@@ -86,22 +84,14 @@ function TopStatus.new(c: any)
 	tb:move_child(self._grace_row, 0)
 	tb:set_min_size(Vector2.new(88, 0))
 	row:add_child(tb)
-	row:add_child(T.vdivider(38.0))
+	row:add_child(T.vdivider(30.0))
 
 	local sb = T.vbox(5)
 	sb.size_flags_vertical = W.SHRINK_CENTER
-	local head = T.hbox(6)
-	self._head = head
-	head:add_child(T.icon_rect("globe", 12.0, T.TEXT_3))
-	head:add_child(T.caption("World control"))
-	head:add_child(spacer())
-	self._goal = T.caption("Goal 80%", 11, T.GOLD)
-	head:add_child(self._goal)
-	sb:add_child(head)
-	self._bar = FillBar.new(7.0, T.AMBER)
+	self._bar = FillBar.new(5.0, T.AMBER)
 	self._bar.goal = Rules.WIN_SHARE
-	self._bar:set_min_size(Vector2.new(280, 12))
-	sb:add_child(self._bar)
+	self._bar:set_min_size(Vector2.new(280, 8))
+	self._bar.size_flags_horizontal = W.EXPAND_FILL
 	local who = T.hbox(6)
 	self._you_sw = T.swatch(T.AMBER, 9.0, 2)
 	who:add_child(self._you_sw)
@@ -117,8 +107,36 @@ function TopStatus.new(c: any)
 	self._lead = T.label("", 12, 600, T.TEXT_2)
 	self._lead_box:add_child(self._lead)
 	who:add_child(self._lead_box)
+	self._goal = T.caption("Goal 80%", 11, T.GOLD)
+	who:add_child(self._goal)
 	sb:add_child(who)
+	sb:add_child(self._bar)
+	sb.size_flags_horizontal = W.EXPAND_FILL
 	row:add_child(sb)
+	row:add_child(T.vdivider(30.0))
+	self.dominion.node.size_flags_vertical = W.SHRINK_CENTER
+	row:add_child(self.dominion.node)
+	local era = self.dominion.node
+	era:set_mouse_filter(W.MOUSE_STOP)
+	era.mouse_entered:Connect(function()
+		c:show_hint(era, self.dominion:hint_spec())
+	end)
+	era.mouse_exited:Connect(function()
+		c:hide_hint(era)
+	end)
+	-- (touch has no hover: a tap shows the same card for a moment)
+	era.gui_input:Connect(function(e)
+		if e.pressed and c.touch then
+			c:show_hint(era, self.dominion:hint_spec())
+			self._era_tap = (self._era_tap or 0) + 1
+			local tap = self._era_tap
+			task.delay(4, function()
+				if self._era_tap == tap then
+					c:hide_hint(era)
+				end
+			end)
+		end
+	end)
 	self:_build_mini()
 	return self
 end
@@ -197,14 +215,13 @@ function TopStatus.apply_layout(self)
 	local T = UITheme
 	local p = self.panel
 	local top = 12.0 + ctx.insets.y
-	-- Phones drop the "WORLD CONTROL · GOAL 80%" header: the bar and its gold goal line say it.
-	self._head:set_visible(not ctx.compact)
+	p:set_min_size(Vector2.zero)
 	self._full:set_visible(not ctx.compact)
 	self._mini:set_visible(ctx.compact)
 	-- Very narrow phones drop the leaderboard hint icon (the pill still opens the board).
 	self._m_chev:set_visible(ctx.vp.X >= 800.0)
-	-- On touch the pill swallows taps (and on phones opens the leaderboard).
-	p:set_mouse_filter(if ctx.touch then W.MOUSE_STOP else W.MOUSE_IGNORE)
+	-- The ribbon swallows clicks: they open the leaderboard.
+	p:set_mouse_filter(W.MOUSE_STOP)
 	if ctx.compact then
 		-- Phones: tuck into the top-right corner, clear of the top-left bar.
 		p.anchor_left = 1.0
@@ -217,30 +234,35 @@ function TopStatus.apply_layout(self)
 		self._clock:set_font_size(16)
 		p:set_padding(12.0, 5.0, 10.0, 5.0)
 	else
-		p.anchor_left = 0.5
-		p.anchor_right = 0.5
-		p.grow_horizontal = W.GROW_BOTH
-		p.offset_left = 0.0
-		p.offset_right = 0.0
-		self._bar:set_min_size(Vector2.new(if ctx.vp.X >= 1200.0 then 340 else 260, 12))
-		self._clock:set_font_size(20)
-		p:set_padding(18.0, 10.0, 18.0, 10.0)
+		p.anchor_left = 0.0
+		p.anchor_right = 0.0
+		p.grow_horizontal = W.GROW_END
+		self._clock:set_font_size(17)
+		p:set_padding(16.0, 7.0, 16.0, 7.0)
 	end
 	self:_fix_widths()
 	p.anchor_top = 0.0
 	p.anchor_bottom = 0.0
 	p.grow_vertical = W.GROW_END
-	local w = p:get_combined_minimum_size().X
 	if ctx.compact then
+		local w = p:get_combined_minimum_size().X
 		-- Right-aligned; drop below the top-left bar row when the phone is too narrow for both.
 		if ctx.vp.X - ctx.insets.z - 8.0 - w < ctx.reserved_top_left.Max.X + 8.0 then
 			top = ctx.reserved_top_left.Max.Y + 4.0
 		end
 	else
-		local dx, y = ctx:place_top(w, top)
-		p.offset_left = dx
-		p.offset_right = dx
-		top = y
+		-- top centre at its own width; under the buttons on a tight screen
+		self.dominion._next:set_visible(false)
+		self._bar:set_min_size(Vector2.new(220, 8))
+		local want = p:get_combined_minimum_size().X
+		local left = math.max(ctx.reserved_top_left.Max.X + 10.0, (ctx.vp.X - want) * 0.5)
+		top = 6.0
+		if left + want + 8.0 > ctx.vp.X then
+			left = 8.0
+			top = ctx.reserved_top_left.Max.Y + 4.0
+		end
+		p.offset_left = left
+		p.offset_right = left
 	end
 	p.offset_top = top
 	p.offset_bottom = top
@@ -256,8 +278,7 @@ function TopStatus._fix_widths(self)
 	local small = math.max(11, T.min_font_size)
 	local cs = if ctx.compact then 16 else 20
 	local ws = math.max(12, T.min_font_size)
-	local w_block =
-		math.max(T.text_width("SPAWN PHASE", small, 700) + 12.0, T.text_width("PROTECTED 8:88", small, 700) + 20.0)
+	local w_block = math.max(T.text_width("SPAWN PHASE", small, 700) + 12.0, T.text_width("PROTECTED", small, 700) + 22.0)
 	T.fix_width(self._phase, w_block, W.ALIGN_LEFT, false)
 	T.fix_width(self._grace, w_block - 16.0)
 	local w_clock = T.text_width("8:88:88", cs, 700) + 2.0
@@ -266,9 +287,9 @@ function TopStatus._fix_widths(self)
 	self._phase.parent:set_min_size(Vector2.new(w_block, 0))
 	self._grace_row:set_min_size(Vector2.new(w_block, self._phase:get_combined_minimum_size().Y))
 	local bar_w = self._bar.custom_minimum_size.X
-	local w_you = T.text_width("You lead · 88.88%", ws, 600) + 2.0
+	local w_you = T.text_width("You #888 · 88.88%", ws, 600) + 2.0
 	T.fix_width(self._you, w_you, W.ALIGN_LEFT, false)
-	local lead_w = math.max(40.0, bar_w - w_you - 12.0 - 9.0 - 12.0 - 18.0)
+	local lead_w = math.max(140.0, bar_w - w_you - 12.0 - 9.0 - 12.0 - 18.0)
 	T.fix_width(self._lead, lead_w, W.ALIGN_LEFT, false)
 	-- The Protected chip and the clock take turns in one slot of fixed width (the pill never resizes).
 	local slot = math.max(
@@ -343,7 +364,8 @@ function TopStatus.refresh(self)
 			-- time_limit_ticks is the absolute tick at which the match ends.
 			local left = math.max(0, (s.time_limit_ticks - now) / tr)
 			self._phase:set_text("TIME LEFT")
-			self._clock:set_text(T.fmt_time(math.ceil(left)))
+			-- (the last two minutes: red, and a mark for those who can't tell the red)
+			self._clock:set_text(T.fmt_time(math.ceil(left)) .. (if left < 120 then " !" else ""))
 			T.set_font_color(self._clock, if left < 120 then T.RED else T.TEXT)
 			local total = if ctx.play_start_tick >= 0
 				then (s.time_limit_ticks - ctx.play_start_tick) / tr
@@ -382,10 +404,10 @@ function TopStatus.refresh(self)
 	self._you_sw:set_visible(me ~= 0)
 	T.set_swatch_color(self._you_sw, mcol)
 	self._you:set_text(if me ~= 0 then ("You " .. T.fmt_pct(my_share)) else "Spectating")
-	if ctx.compact and me ~= 0 and self.rank_provider ~= nil then
+	if me ~= 0 and self.rank_provider ~= nil then
 		local rk = tonumber(self.rank_provider()) or 0
 		if rk > 0 then
-			self._you:set_text(string.format("#%d · %s", rk, T.fmt_pct(my_share)))
+			self._you:set_text(string.format(if ctx.compact then "#%d · %s" else "You #%d · %s", rk, T.fmt_pct(my_share)))
 		end
 	end
 	self._bar.fill_color = mcol

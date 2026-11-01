@@ -95,6 +95,11 @@ end
 --- (`strength` 0..1 scales it). Returns how open the lid's crack is (0..1), for a light leak.
 function ChestView.idle(P: any, t: number, every: number, strength: number?): number
 	local k0 = strength or 1
+	if ChestView.still then
+		-- (Reduce Motion: the chest rests)
+		P.y, P.roll, P.yaw, P.lid = 0, 0, 0, 0
+		return 0
+	end
 	P.y = math.sin(t * 2.4) * 0.08
 	local phase = t % every
 	local k = phase / 0.42

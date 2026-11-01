@@ -32,7 +32,7 @@ ShopButton.TURN_S = 2.6
 local WHITE = Color3.new(1, 1, 1)
 local PUMPKIN = Color3.fromRGB(255, 160, 60)
 local LILAC = Color3.fromRGB(214, 196, 255)
-local FONT_H = Font.new("rbxasset://fonts/families/Montserrat.json", Enum.FontWeight.Heavy)
+local FONT_H = Font.new("rbxasset://fonts/families/BuilderSans.json", Enum.FontWeight.ExtraBold)
 
 local function new(class: string, props: { [string]: any }, parent: Instance?): any
 	local i = Instance.new(class)

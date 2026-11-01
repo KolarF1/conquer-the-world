@@ -133,17 +133,17 @@ do
 		end
 		expect(buffer.len(m) == e.w * e.h and lit > e.w * e.h * 0.03, key .. ": " .. e.w .. "x" .. e.h .. ", " .. lit .. " lit pixels")
 	end
-	expect(MapData.plate_rim.w == 112 * #MapData.kinds and MapData.plate_rim.h == 112 and MapData.unit_body.w == 13 * 12 and MapData.unit_body.h == 13, "cell sizes are the layers' (112 and 13)")
+	expect(MapData.plate_rim.w == 112 * #MapData.kinds and MapData.plate_rim.h == 112 and MapData.unit_body.w == 32 * 12 and MapData.unit_body.h == 32, "cell sizes are the layers' (112 and 32)")
 	-- every unit sprite has a body and an outline
 	local ub = Pack.mask(MapData.unit_body.data, MapData.unit_body.w, MapData.unit_body.h)
 	local ur = Pack.mask(MapData.unit_rim.data, MapData.unit_rim.w, MapData.unit_rim.h)
 	local all = true
 	for k = 0, 11 do
 		local body, rim = 0, 0
-		for y = 0, 12 do
-			for x = 0, 12 do
-				body += if buffer.readu8(ub, y * 156 + k * 13 + x) > 100 then 1 else 0
-				rim += if buffer.readu8(ur, y * 156 + k * 13 + x) > 100 then 1 else 0
+		for y = 0, 31 do
+			for x = 0, 31 do
+				body += if buffer.readu8(ub, y * 384 + k * 32 + x) > 100 then 1 else 0
+				rim += if buffer.readu8(ur, y * 384 + k * 32 + x) > 100 then 1 else 0
 			end
 		end
 		all = all and body >= 8 and rim >= 6

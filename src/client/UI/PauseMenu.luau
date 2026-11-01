@@ -136,7 +136,7 @@ VolumeRow.TRACK_MAX = 170.0
 --- A wheel notch moves it this much.
 VolumeRow.WHEEL_STEP = 0.05
 
-local FONT_PCT = Font.new("rbxasset://fonts/families/Montserrat.json", Enum.FontWeight.Bold)
+local FONT_PCT = Font.new("rbxasset://fonts/families/BuilderSans.json", Enum.FontWeight.Bold)
 
 function VolumeRow.new(text: string, icon_name: string)
 	local self = setmetatable({}, VolumeRow.__mt)
@@ -376,7 +376,7 @@ function PauseMenu.new(c: any)
 	end)
 	self:add_child(self._dim)
 	self._panel = GlassPanel.new(22.0, 22.0, 18, true, 34)
-	self._panel:set_tint(UITheme.rgba(0.036, 0.066, 0.075, 0.94))
+	self._panel:set_tint(UITheme.GLASS_SOLID)
 	self._panel:set_min_size(Vector2.new(380, 0))
 	self:add_child(self._panel)
 	local v = UITheme.vbox(14)
@@ -412,7 +412,7 @@ function PauseMenu.new(c: any)
 	self._resume.pressed:Connect(function()
 		self:close()
 	end)
-	self._help_btn = UITheme.button("How to play", "GlassButton", "help", 46.0)
+	self._help_btn = UITheme.button("Help & Credits", "GlassButton", "help", 46.0)
 	self._help_btn.alignment = W.ALIGN_LEFT
 	self._help_btn.pressed:Connect(function()
 		self:close()

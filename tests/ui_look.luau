@@ -60,7 +60,7 @@ expect(contrast(T.INK, T.AMBER_HI) >= 7, "and on its hover")
 expect(contrast(T.AMBER, panel) >= 7, "the accent reads as text on a panel")
 expect(contrast(T.GOLD, panel) >= 7 and contrast(T.GREEN, panel) >= 7 and contrast(T.RED, panel) >= 4.5, "gold, green and red stay readable on a panel")
 expect(contrast(T.AMBER, T.CYAN) >= 1.3 or math.abs(lum(T.AMBER) - lum(T.CYAN)) > 0.05, "accent and info are told apart")
-expect(T.R_SM < T.R_MD and T.R_MD < T.R_LG and T.R_LG <= 12, "radii step up and stay crisp")
+expect(T.R_SM < T.R_MD and T.R_MD < T.R_LG and T.R_LG <= 16, "radii step up and stay tidy (soft corners since 2026-11-01)")
 expect(T.LINE_2.alpha > T.LINE.alpha, "the strong line is stronger")
 
 if fails > 0 then

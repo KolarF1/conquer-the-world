@@ -355,7 +355,8 @@ function PartyPanel._refresh_list(self)
 	self._list_caption:set_visible(shown > 0)
 	-- as tall as the rows, never past the screen
 	local ctx = self.ctx
-	local rows_h = if shown > 0 then shown * PartyPanel.ROW_H + (shown - 1) * PartyPanel.ROW_GAP else 0.0
+	local row_h = math.max(PartyPanel.ROW_H, T.touch_min)
+	local rows_h = if shown > 0 then shown * row_h + (shown - 1) * PartyPanel.ROW_GAP else 0.0
 	local room = if ctx.vp ~= nil
 		then ctx:clear_rect().Max.Y
 			- (self._list_top or 60.0)
@@ -363,7 +364,7 @@ function PartyPanel._refresh_list(self)
 			- (if ctx.compact then PartyPanel.LIST_CHROME_COMPACT else PartyPanel.LIST_CHROME)
 		else 300.0
 	self._list_scroll:set_visible(shown > 0)
-	self._list_scroll:set_min_size(Vector2.new(0, math.max(PartyPanel.ROW_H, math.min(rows_h, room))))
+	self._list_scroll:set_min_size(Vector2.new(0, math.max(row_h, math.min(rows_h, room))))
 	self._list:reset_size()
 end
 
@@ -415,13 +416,14 @@ function PartyPanel.apply_layout(self)
 		p.offset_left, p.offset_right = x, x
 		p.offset_top, p.offset_bottom = y + 46, y + 46
 	else
-		-- desktop: on the left, halfway down
+		-- desktop: beside the title's column, level with the foot of its dock
 		p:set_visible(true)
-		p.anchor_left, p.anchor_right, p.anchor_top, p.anchor_bottom = 0, 0, 0.5, 0.5
+		p.anchor_left, p.anchor_right, p.anchor_top, p.anchor_bottom = 0, 0, 1, 1
 		p.grow_horizontal = W.GROW_END
-		p.grow_vertical = W.GROW_BOTH
-		p.offset_left, p.offset_right = x + 4.0, x + 4.0
-		p.offset_top, p.offset_bottom = 0, 0
+		p.grow_vertical = W.GROW_BEGIN
+		local px = if ctx.vp.X >= 1100.0 and ctx.vp.Y >= 640.0 then ctx.insets.x + 24.0 + 560.0 + 12.0 else x + 4.0
+		p.offset_left, p.offset_right = px, px
+		p.offset_top, p.offset_bottom = -40.0, -40.0
 	end
 	p:reset_size()
 	-- the invite list: under the top bar row (its buttons draw above our layer), growing down, its rows

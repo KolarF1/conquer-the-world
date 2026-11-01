@@ -46,7 +46,7 @@ local GOLD_LIGHT = Color3.fromRGB(255, 226, 122)
 local GOLD_DEEP = Color3.fromRGB(238, 148, 28)
 local INK = Color3.fromRGB(52, 28, 2)
 local RED = Color3.fromRGB(232, 52, 52)
-local FONT_H = Font.new("rbxasset://fonts/families/Montserrat.json", Enum.FontWeight.Heavy)
+local FONT_H = Font.new("rbxasset://fonts/families/BuilderSans.json", Enum.FontWeight.ExtraBold)
 
 local function new(class: string, props: { [string]: any }, parent: Instance?): any
 	local i = Instance.new(class)
@@ -107,7 +107,7 @@ function ShopSlot._build(self)
 	}, body)
 	self._corner = new("UICorner", {}, ground)
 	-- (a UIGradient multiplies the frame's colour: the frame is white)
-	self._grad = new("UIGradient", { Color = ColorSequence.new(GOLD_LIGHT, GOLD_DEEP), Rotation = 90 }, ground)
+	self._grad = new("UIGradient", { Color = ColorSequence.new(GOLD_LIGHT, GOLD_LIGHT:Lerp(GOLD_DEEP, 0.35)), Rotation = 90 }, ground)
 	self._stroke = new("UIStroke", {
 		Color = INK,
 		Thickness = 1.5,
@@ -344,7 +344,7 @@ function ShopSlot._process(self, dt: number)
 	self._shine.Offset = Vector2.new(if sk < 1 then -1 + 2 * sk else -1, 0)
 	-- and the shake, until the Arsenal has been opened from here
 	local rot = 0
-	if not self._seen then
+	if not self._seen and not UITheme.reduced_motion then
 		local wk = (t % ShopSlot.WIGGLE_S) / 0.55
 		if wk < 1 then
 			rot = math.sin(wk * math.pi * 4) * 7 * (1 - wk)

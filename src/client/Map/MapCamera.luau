@@ -462,6 +462,10 @@ function MapCamera.focus_tile(self: MapCamera, tile: number, scale: number, dura
 end
 
 function MapCamera.add_shake(self: MapCamera, strength: number)
+	-- (Roblox's Reduce Motion setting: the blast still flashes, the view holds still)
+	if (game :: any) ~= nil and game:GetService("GuiService").ReducedMotionEnabled then
+		return
+	end
 	self._shake = math.max(self._shake, strength)
 end
 

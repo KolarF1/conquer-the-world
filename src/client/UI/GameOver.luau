@@ -221,7 +221,7 @@ function GameOver.new(c: any)
 	local price = Instance.new("TextLabel")
 	price.BackgroundTransparency = 1
 	price.AutomaticSize = Enum.AutomaticSize.X
-	price.FontFace = Font.new("rbxasset://fonts/families/Montserrat.json", Enum.FontWeight.Heavy)
+	price.FontFace = Font.new("rbxasset://fonts/families/BuilderSans.json", Enum.FontWeight.ExtraBold)
 	price.TextColor3 = Color3.fromRGB(255, 226, 150)
 	price.LayoutOrder = 2
 	price.ZIndex = 41

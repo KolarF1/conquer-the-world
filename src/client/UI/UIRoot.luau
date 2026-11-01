@@ -18,6 +18,7 @@ local Telemetry = require("./Telemetry")
 local MusicMood = require("../Audio/MusicMood")
 local UIAdvisor = require("./UIAdvisor")
 local UILayoutProbe = require("./UILayoutProbe")
+local HudCoverage = require("./HudCoverage")
 local TouchRouter = require("./TouchRouter")
 local TitleScreen = require("./TitleScreen")
 local SpawnOverlay = require("./SpawnOverlay")
@@ -35,6 +36,8 @@ local ArsenalData: any = if typeof(game) == "Instance"
 	then require((game :: any):GetService("ReplicatedStorage"):WaitForChild("Airfront").Data.Arsenal)
 	else (require :: any)("../../shared/Data/Arsenal")
 local CrateOpening = require("./CrateOpening")
+local CrateOdds = require("./CrateOdds")
+local ChestView = require("./ChestView")
 local HelpOverlay = require("./HelpOverlay")
 local PauseMenu = require("./PauseMenu")
 local MapPicker = require("./MapPicker")
@@ -121,6 +124,19 @@ function UIRoot.new(opts: any?)
 		ctx.touch_device = opts.touch_device
 	end
 	ctx.touch = ctx.touch_device
+	UITheme.touch_min = if ctx.touch then 44 else 0
+	-- Roblox's accessibility settings: read now, and followed if the player changes them mid-game
+	if UICtx.IS_ROBLOX then
+		local GS = game:GetService("GuiService")
+		local function sync_prefs()
+			UITheme.reduced_motion = GS.ReducedMotionEnabled
+			UITheme.preferred_transparency = GS.PreferredTransparency
+			ChestView.still = GS.ReducedMotionEnabled
+		end
+		sync_prefs()
+		GS:GetPropertyChangedSignal("ReducedMotionEnabled"):Connect(sync_prefs)
+		GS:GetPropertyChangedSignal("PreferredTransparency"):Connect(sync_prefs)
+	end
 	self.labels_on = ctx:setting("labels", true) ~= false
 	self:_make_gui(opts.parent)
 	self:_build()
@@ -441,6 +457,8 @@ function UIRoot.hud_controls(self): { GuiObject }
 		self.board._pill,
 		self.attacks.panel,
 		self.bar.panel,
+		self.bar.rail,
+		self.bar.build_panel,
 		self.bar.tray,
 		self.bar._place_chip,
 		self.spawn.panel,
@@ -669,6 +687,66 @@ function UIRoot.open_locker(self)
 	self:_update_input_gate()
 end
 
+--- Studio debug channel (Main's CTW_CMD): shows the end screen ("victory", "defeat", "eliminated"...).
+function UIRoot.debug_over(self, kind: any)
+	self.over:open(kind or "victory", 0, 0, { duration_s = 300 }, -1)
+end
+
+--- Studio debug channel (Main's CTW_CMD): how much of the screen the always-on HUD covers now (HudCoverage), and
+--- each part's size in logical px.
+function UIRoot.hud_coverage(self)
+	local ctx = self.ctx
+	local boxes, parts = {}, {}
+	local function add(name: string, r: any)
+		if r ~= nil and r.Width > 0 and r.Height > 0 then
+			table.insert(boxes, { x0 = r.Min.X, y0 = r.Min.Y, x1 = r.Max.X, y1 = r.Max.Y })
+			table.insert(parts, string.format("%s %dx%d", name, r.Width, r.Height))
+		end
+	end
+	local function panel(name: string, c: any)
+		if c ~= nil and c:is_visible_in_tree() then
+			add(name, c:get_global_rect())
+		end
+	end
+	panel("top", self.top.panel)
+	panel("bar", self.bar.panel)
+	panel("rail", self.bar.rail)
+	panel("build", self.bar.build_panel)
+	panel("pill", self.board._pill)
+	if self.topbar_provider ~= nil then
+		-- (ours only, in viewport px: Roblox's own buttons are not ours to move)
+		local r = self.topbar_provider()
+		if r ~= nil then
+			add("row", ctx:rect_to_logical(r))
+		end
+	end
+	local share = HudCoverage.share(boxes, ctx.vp.X, ctx.vp.Y)
+	return string.format(
+		"%.1f%% of %dx%d compact=%s: %s",
+		share * 100,
+		ctx.vp.X,
+		ctx.vp.Y,
+		tostring(ctx.compact),
+		table.concat(parts, ", ")
+	)
+end
+
+--- Studio debug channel (Main's CTW_CMD): opens a screen that needs a purchase or a first run to reach.
+function UIRoot.debug_screen(self, what: any)
+	if what == "general" then
+		self.general:open("debug")
+	elseif what == "tutorial" then
+		self.tutorial:begin()
+	elseif what == "odds" then
+		self.crate_odds:open(self.locker:_inv().owned)
+	else
+		self.crate_opening:play({})
+		task.delay(1.5, function()
+			self.crate_opening:resolve(what or "")
+		end)
+	end
+end
+
 --- Studio debug channel (Main's CTW_CMD): switches the Locker's tab (1 skins, 2 flags).
 function UIRoot.locker_tab(self, i: any)
 	local chip = self.locker and self.locker._tabs and self.locker._tabs[tonumber(i) or 1]
@@ -890,7 +968,7 @@ function UIRoot._build(self)
 	top.name = "TopStatus"
 	self.top = top
 	top.tapped:Connect(function()
-		if ctx.compact and self._screen ~= "title" then
+		if self._screen ~= "title" then
 			self:toggle_leaderboard()
 		end
 	end)
@@ -976,7 +1054,7 @@ function UIRoot._build(self)
 	place_confirm:set_meta("bar", bar)
 	place_confirm.blockers = function()
 		local out = {}
-		for _, c in ipairs({ top.panel, attacks.panel, bar.panel, bar.tray, bar._place_chip, alert.panel, board.panel }) do
+		for _, c in ipairs({ top.panel, attacks.panel, bar.panel, bar.rail, bar.build_panel, bar.tray, bar._place_chip, alert.panel, board.panel }) do
 			if c ~= nil and c:is_visible_in_tree() then
 				table.insert(out, c:get_global_rect())
 			end
@@ -1035,6 +1113,8 @@ function UIRoot._build(self)
 			board._pill,
 			attacks.panel,
 			bar.panel,
+			bar.rail,
+			bar.build_panel,
 			bar.tray,
 			bar._place_chip,
 			alert.panel,
@@ -1317,6 +1397,12 @@ function UIRoot._build(self)
 	self.crate_opening = opening
 	locker:set_opening(opening)
 	root:add_child(opening)
+	-- every item's own odds, above both (the DETAILS buttons)
+	local odds_view = CrateOdds.new(ctx)
+	odds_view.name = "CrateOdds"
+	self.crate_odds = odds_view
+	locker.odds_view = odds_view
+	root:add_child(odds_view)
 	local busy = BusyChip.new(ctx)
 	busy.name = "Busy"
 	self.busy = busy
@@ -2442,6 +2528,7 @@ function UIRoot._layout(self)
 	end
 	ctx.reserved_top_left = self.probe:airship_reserved()
 	UITheme.min_font_size = if ctx.touch then 12 else 0
+	UITheme.touch_min = if ctx.touch then 44 else 0
 	self.title:apply_layout()
 	self.top:apply_layout()
 	self.spawn:apply_layout()
@@ -2547,6 +2634,9 @@ function UIRoot._layout(self)
 	end
 	if self.crate_opening ~= nil then
 		self.crate_opening:apply_layout()
+	end
+	if self.crate_odds ~= nil and self.crate_odds.is_open then
+		self.crate_odds:apply_layout()
 	end
 	if self.over.is_open then
 		self.over:apply_layout()

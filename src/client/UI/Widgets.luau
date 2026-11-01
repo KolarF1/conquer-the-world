@@ -2650,7 +2650,8 @@ function Button._get_minimum_size(self): Vector2
 			h += fh
 		end
 	end
-	return Vector2.new(w + l + r, h + t + b)
+	local tm = UITheme.touch_min
+	return Vector2.new(if has_text then w + l + r else math.max(w + l + r, tm), math.max(h + t + b, tm))
 end
 
 function Button._on_geometry(self)
@@ -3091,6 +3092,10 @@ function W.pop_in(c, delay: number?, from_scale: number?, dur: number?)
 	if d > 0 then
 		t:tween_interval(d)
 	end
+	if UITheme.reduced_motion then
+		t:tween_property(c, "modulate:a", 1.0, du * 0.8):set_trans(W.TRANS_CUBIC):set_ease(W.EASE_OUT)
+		return t
+	end
 	t:tween_callback(function()
 		c:set_scale(fs)
 	end)
@@ -3126,6 +3131,11 @@ function W.slide_in(c, from_offset: Vector2, delay: number?, dur: number?)
 	local du = dur or 0.45
 	W._set_shift(c, Vector2.zero)
 	c:set_modulate_a(0.0)
+	if UITheme.reduced_motion then
+		local f = c:create_tween()
+		f:tween_property(c, "modulate:a", 1.0, du * 0.7):set_delay(d):set_trans(W.TRANS_CUBIC):set_ease(W.EASE_OUT)
+		return f
+	end
 	W._set_shift(c, from_offset)
 	local t = c:create_tween():set_parallel(true)
 	t:tween_method(function(v: Vector2)

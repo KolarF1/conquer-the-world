@@ -18,11 +18,11 @@ local function near(a: number, b: number, eps: number?): boolean
 	return math.abs(a - b) <= (eps or 1e-6)
 end
 
--- 1. Montserrat pair kerning (tools/art/make_font_kern.py; the font changed from Rubik on 2026-10-31, so the pair values below are Montserrat's: L|T -65, not -102): letter-spaced text is shaped like HarfBuzz did it
-check(T.kern(string.byte("L"), string.byte("T"), 800) == -65, "kern L|T at 800 = -65 em/1000")
+-- 1. Builder Sans pair kerning (tools/art/make_font_kern.py; the font changed from Rubik on 2026-10-31, so the pair values below are Montserrat's: L|T -65, not -102): letter-spaced text is shaped like HarfBuzz did it
+check(T.kern(string.byte("L"), string.byte("T"), 800) == -83, "kern L|T at 800 = -83 em/1000")
 check(T.kern(string.byte("A"), string.byte("Y"), 800) < -30, "kern A|Y at 800 is negative")
 check(T.kern(string.byte("l"), string.byte("a"), 600) == 0, "no kern l|a (the Relaxed gap was pixel snapping)")
-check(T.kern(string.byte("L"), string.byte("T"), 820) == -65, "weights snap to the nearest 100")
+check(T.kern(string.byte("L"), string.byte("T"), 820) == -83, "weights snap to the nearest 100")
 check(T.kern(0x2022, string.byte("T"), 800) == 0, "non-ASCII pairs: no kerning")
 do
 	local ts = 100
@@ -31,8 +31,8 @@ do
 	local adv_l = T.char_adv_px("L", ts, 800, false)
 	local adv_t = T.char_adv_px("T", ts, 800, false)
 	check(near(xs[1], 0), "pen of L at 0")
-	check(near(xs[2], adv_l - 0.065 * em, 1e-4), "pen of T pulled in by the L|T pair")
-	check(near(total, adv_l + adv_t - 0.065 * em, 1e-4), "total advance includes the kerning")
+	check(near(xs[2], adv_l - 0.083 * em, 1e-4), "pen of T pulled in by the L|T pair")
+	check(near(total, adv_l + adv_t - 0.083 * em, 1e-4), "total advance includes the kerning")
 	local xs2 = T.glyph_positions("Relaxed", 18, 600)
 	local mono = true
 	for i = 2, #xs2 do
@@ -51,7 +51,7 @@ do
 	end
 	local plain = adv * em15 + 2 * 11
 	check(w_kern < plain, string.format("MULTIPLAYER measures %d < %.2f without kerning", w_kern, plain))
-	check(T.text_width("TROOPS", 11, 700) == 49, "tabular templates keep their widths (no kerning)")
+	check(T.text_width("TROOPS", 11, 700) == 43, "tabular templates keep their widths (no kerning)")
 end
 
 -- 2. MIRV copy: the cap, not a promise (review R2-7)

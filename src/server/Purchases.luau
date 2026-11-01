@@ -638,8 +638,13 @@ end
 
 --- Open one crate: spend a crate credit and add an item the player doesn't own (Cosmetics.roll, the
 --- published odds), in one write; the new item is equipped when its slot is empty. Yields.
---- (ok, item_id) or (false, "no crate" | "everything owned" | "store unavailable: ...").
+--- (ok, item_id) or (false, "not allowed" | "no crate" | "everything owned" | "store unavailable: ...").
 function Purchases.open_crate(player: any): (boolean, string?)
+	-- (the client hides crates where they're restricted; this holds for a client that doesn't. The credit
+	-- stays saved.)
+	if Purchases.crates_allowed ~= nil and not Purchases.crates_allowed(player) then
+		return false, "not allowed"
+	end
 	local rng = deps.rng or Random.new()
 	local got: string? = nil
 	local why = "no crate"
